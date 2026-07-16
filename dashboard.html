@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LineZero — Staff Dashboard</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-1:      #fcfcfb;
+    --page:           #f9f9f7;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --gridline:       #e1e0d9;
+    --baseline:       #c3c2b7;
+    --border:         rgba(11,11,11,0.10);
+    --series-1:       #2a78d6;
+    --status-good:    #0ca30c;
+    --status-warning: #fab219;
+    --status-serious: #ec835a;
+    --status-critical:#d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --surface-1:      #1a1a19;
+      --page:           #0d0d0d;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted:     #898781;
+      --gridline:       #2c2c2a;
+      --baseline:       #383835;
+      --border:         rgba(255,255,255,0.10);
+      --series-1:       #3987e5;
+      --status-good:    #0ca30c;
+      --status-warning: #fab219;
+      --status-serious: #ec835a;
+      --status-critical:#d03b3b;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface-1:      #1a1a19;
+    --page:           #0d0d0d;
+    --text-primary:   #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted:     #898781;
+    --gridline:       #2c2c2a;
+    --baseline:       #383835;
+    --border:         rgba(255,255,255,0.10);
+    --series-1:       #3987e5;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--text-primary);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  header.top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  header.top h1 {
+    font-size: 22px;
+    margin: 0;
+  }
+  header.top .sub {
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+  .top-actions { display: flex; align-items: center; gap: 12px; }
+
+  .conn-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--text-muted);
+  }
+  .conn-dot.live { background: var(--status-good); }
+  .conn-label { font-size: 12px; color: var(--text-secondary); }
+
+  button.theme-toggle {
+    border: 1px solid var(--border);
+    background: var(--surface-1);
+    color: var(--text-secondary);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  #config-banner {
+    display: none;
+    background: var(--surface-1);
+    border: 1px solid var(--status-warning);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  #config-banner code {
+    background: var(--page);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat-tile {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .stat-tile .label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+  .stat-tile .value {
+    font-size: 26px;
+    font-weight: 600;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+  @media (max-width: 760px) {
+    .board { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .panel h2 {
+    font-size: 15px;
+    margin: 0 0 12px;
+  }
+  .panel .empty {
+    color: var(--text-muted);
+    font-size: 13px;
+    padding: 12px 0;
+  }
+
+  .order-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .order-card:last-child { margin-bottom: 0; }
+  .order-card .row1 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .token {
+    font-size: 20px;
+    font-weight: 600;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px 10px;
+  }
+  .badge .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+  }
+  .badge.paid .dot { background: var(--status-warning); }
+  .badge.ready .dot { background: var(--status-good); }
+
+  .order-items {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 6px 0;
+  }
+  .order-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .order-meta .elapsed {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .order-meta .total {
+    font-size: 13px;
+    font-weight: 600;
+  }
+  button.action {
+    background: var(--series-1);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.action:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  .bar-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 44px;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+  .bar-row .name {
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .bar-track {
+    background: var(--gridline);
+    border-radius: 4px;
+    height: 12px;
+    position: relative;
+  }
+  .bar-fill {
+    background: var(--series-1);
+    height: 12px;
+    border-radius: 0 4px 4px 0;
+    min-width: 4px;
+  }
+  .bar-row .count {
+    text-align: right;
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <h1>LineZero — Staff Dashboard</h1>
+      <div class="sub">Paid orders only. Unpaid orders never reach this screen.</div>
+    </div>
+    <div class="top-actions">
+      <span class="conn-dot" id="conn-dot"></span>
+      <span class="conn-label" id="conn-label">connecting…</span>
+      <button class="theme-toggle" id="theme-toggle" type="button">Toggle theme</button>
+    </div>
+  </header>
+
+  <div id="config-banner">
+    Set <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> near the top of this file's
+    <code>&lt;script&gt;</code> block before deploying — the dashboard can't load data without them.
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-tile">
+      <div class="label">Orders today</div>
+      <div class="value" id="stat-orders">–</div>
+    </div>
+    <div class="stat-tile">
+      <div class="label">Revenue today</div>
+      <div class="value" id="stat-revenue">–</div>
+    </div>
+    <div class="stat-tile">
+      <div class="label">Avg order value</div>
+      <div class="value" id="stat-avg">–</div>
+    </div>
+    <div class="stat-tile">
+      <div class="label">In queue now</div>
+      <div class="value" id="stat-queue">–</div>
+    </div>
+  </div>
+
+  <div class="board">
+    <div class="panel">
+      <h2>Active queue</h2>
+      <div id="queue-list"><div class="empty">Loading…</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>Top items sold today</h2>
+      <div id="top-items"><div class="empty">Loading…</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+  // --- Fill these in before deploying (see README / .env.example) ---
+  const SUPABASE_URL = "REPLACE_WITH_YOUR_SUPABASE_URL";
+  const SUPABASE_ANON_KEY = "REPLACE_WITH_YOUR_SUPABASE_ANON_KEY";
+  // --------------------------------------------------------------
+
+  const rupees = (n) => `₹${Number(n ?? 0).toFixed(2)}`;
+
+  const themeToggle = document.getElementById("theme-toggle");
+  themeToggle.addEventListener("click", () => {
+    const root = document.documentElement;
+    const current = root.getAttribute("data-theme");
+    root.setAttribute("data-theme", current === "dark" ? "light" : "dark");
+  });
+
+  if (!SUPABASE_URL.startsWith("http") || SUPABASE_ANON_KEY.startsWith("REPLACE")) {
+    document.getElementById("config-banner").style.display = "block";
+    document.getElementById("conn-label").textContent = "not configured";
+    throw new Error("LineZero dashboard: SUPABASE_URL / SUPABASE_ANON_KEY not set.");
+  }
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function setConn(live) {
+    document.getElementById("conn-dot").classList.toggle("live", live);
+    document.getElementById("conn-label").textContent = live ? "live" : "reconnecting…";
+  }
+
+  function todayStartISO() {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d.toISOString();
+  }
+
+  function elapsedLabel(iso) {
+    const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins}m ago`;
+    return `${Math.floor(mins / 60)}h ${mins % 60}m ago`;
+  }
+
+  async function markReady(orderId) {
+    await supabase.from("orders").update({ status: "ready", ready_at: new Date().toISOString() }).eq("id", orderId);
+  }
+
+  async function markCompleted(orderId) {
+    await supabase.from("orders").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", orderId);
+  }
+
+  function renderQueue(orders) {
+    const el = document.getElementById("queue-list");
+    if (!orders.length) {
+      el.innerHTML = `<div class="empty">No paid orders waiting right now.</div>`;
+      return;
+    }
+    el.innerHTML = orders
+      .map((order) => {
+        const items = (order.order_items || [])
+          .map((it) => `${it.quantity} × ${it.item_name}`)
+          .join(", ");
+        const isPaid = order.status === "paid";
+        const badgeClass = isPaid ? "paid" : "ready";
+        const badgeText = isPaid ? "Preparing" : "Ready for pickup";
+        const actionLabel = isPaid ? "Mark ready" : "Mark completed";
+        return `
+          <div class="order-card" data-id="${order.id}">
+            <div class="row1">
+              <span class="token">#${order.token_number ?? "–"}</span>
+              <span class="badge ${badgeClass}"><span class="dot"></span>${badgeText}</span>
+            </div>
+            <div class="order-items">${items || "—"}</div>
+            <div class="order-meta">
+              <span class="elapsed" data-placed="${order.placed_at}">${elapsedLabel(order.placed_at)}</span>
+              <span class="total">${rupees(order.total_amount)}</span>
+              <button class="action" data-action="${isPaid ? "ready" : "completed"}" data-id="${order.id}">
+                ${actionLabel}
+              </button>
+            </div>
+          </div>`;
+      })
+      .join("");
+  }
+
+  function renderTopItems(rows) {
+    const el = document.getElementById("top-items");
+    if (!rows.length) {
+      el.innerHTML = `<div class="empty">No sales yet today.</div>`;
+      return;
+    }
+    const max = Math.max(...rows.map((r) => r.quantity));
+    el.innerHTML = rows
+      .map(
+        (r) => `
+        <div class="bar-row">
+          <span class="name" title="${r.item_name}">${r.item_name}</span>
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.round((r.quantity / max) * 100)}%"></div></div>
+          <span class="count">${r.quantity}</span>
+        </div>`
+      )
+      .join("");
+  }
+
+  async function refreshQueue() {
+    const { data, error } = await supabase
+      .from("orders")
+      .select("id, token_number, total_amount, status, placed_at, order_items(item_name, quantity)")
+      .in("status", ["paid", "ready"])
+      .order("token_number", { ascending: true });
+    if (error) {
+      console.error("refreshQueue failed", error);
+      return;
+    }
+    renderQueue(data);
+    document.getElementById("stat-queue").textContent = data.length;
+  }
+
+  async function refreshStats() {
+    const { data, error } = await supabase
+      .from("orders")
+      .select("total_amount, status")
+      .gte("placed_at", todayStartISO())
+      .in("status", ["paid", "ready", "completed"]);
+    if (error) {
+      console.error("refreshStats failed", error);
+      return;
+    }
+    const count = data.length;
+    const revenue = data.reduce((sum, o) => sum + Number(o.total_amount), 0);
+    document.getElementById("stat-orders").textContent = count;
+    document.getElementById("stat-revenue").textContent = rupees(revenue);
+    document.getElementById("stat-avg").textContent = rupees(count ? revenue / count : 0);
+  }
+
+  async function refreshTopItems() {
+    const { data, error } = await supabase
+      .from("order_items")
+      .select("item_name, quantity, orders!inner(status, placed_at)")
+      .gte("orders.placed_at", todayStartISO())
+      .in("orders.status", ["paid", "ready", "completed"]);
+    if (error) {
+      console.error("refreshTopItems failed", error);
+      return;
+    }
+    const totals = {};
+    for (const row of data) {
+      totals[row.item_name] = (totals[row.item_name] || 0) + row.quantity;
+    }
+    const ranked = Object.entries(totals)
+      .map(([item_name, quantity]) => ({ item_name, quantity }))
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 5);
+    renderTopItems(ranked);
+  }
+
+  async function refreshAll() {
+    await Promise.all([refreshQueue(), refreshStats(), refreshTopItems()]);
+  }
+
+  document.getElementById("queue-list").addEventListener("click", async (event) => {
+    const btn = event.target.closest("button.action");
+    if (!btn) return;
+    btn.disabled = true;
+    const orderId = btn.dataset.id;
+    if (btn.dataset.action === "ready") {
+      await markReady(orderId);
+    } else {
+      await markCompleted(orderId);
+    }
+    // Realtime subscription below re-renders on the resulting UPDATE event.
+  });
+
+  setInterval(() => {
+    document.querySelectorAll(".elapsed[data-placed]").forEach((el) => {
+      el.textContent = elapsedLabel(el.dataset.placed);
+    });
+  }, 30000);
+
+  supabase
+    .channel("orders-dashboard")
+    .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
+      refreshAll();
+    })
+    .subscribe((status) => {
+      setConn(status === "SUBSCRIBED");
+    });
+
+  refreshAll();
+</script>
+</body>
+</html>
