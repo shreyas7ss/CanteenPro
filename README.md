@@ -4,6 +4,57 @@ A canteen pre-order system: Telegram bot menu + cart → pay via UPI deep link �
 live staff dashboard. See [ARCHITECTURE_UPI_Deep_Linking_Prototype.md](ARCHITECTURE_UPI_Deep_Linking_Prototype.md)
 for the full design.
 
+## Data model
+
+```mermaid
+erDiagram
+    MENU_ITEMS ||--o{ ORDER_ITEMS : "snapshotted into"
+    ORDERS ||--o{ ORDER_ITEMS : "contains"
+
+    MENU_ITEMS {
+        uuid id PK
+        text name
+        numeric price
+        text category
+        boolean is_available
+        text image_url
+        timestamptz created_at
+    }
+
+    ORDERS {
+        uuid id PK
+        int token_number "null until paid"
+        bigint telegram_user_id
+        text telegram_username
+        text student_name
+        text roll_number
+        numeric total_amount
+        text merchant_transaction_id UK "our upi tr ref"
+        text student_utr "optional, see §11"
+        text payment_mode
+        text status "pending_payment/paid/ready/completed/cancelled"
+        text notes
+        timestamptz placed_at
+        timestamptz paid_at
+        timestamptz ready_at
+        timestamptz completed_at
+    }
+
+    ORDER_ITEMS {
+        uuid id PK
+        uuid order_id FK
+        uuid menu_item_id FK
+        text item_name "snapshot at order time"
+        numeric unit_price "snapshot at order time"
+        int quantity
+    }
+```
+
+`order_items` denormalizes `item_name`/`unit_price` off `menu_items` at order time, so a
+later menu price change never rewrites past order history. `assign_next_token` (in
+`schema.sql`) is the only writer of `token_number`/`status='paid'`/`paid_at`, and runs
+under an advisory lock so two simultaneous payments can't collide on a token.
+
 ## Setup
 
 1. **Supabase**
