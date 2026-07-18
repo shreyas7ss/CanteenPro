@@ -71,6 +71,10 @@ begin
         return v_existing_token;
     end if;
 
+    if v_status = 'cancelled' then
+        raise exception 'order % was cancelled', p_order_id;
+    end if;
+
     perform pg_advisory_xact_lock(hashtext('linezero_token_' || current_date::text));
 
     select count(*) + 1 into v_token
@@ -108,14 +112,55 @@ create policy "anon can read order_items" on order_items
 -- Realtime: dashboard subscribes to changes on orders.
 alter publication supabase_realtime add table orders;
 
--- Seed menu
+-- Seed menu — J.V. Enterprises, transcribed from data/JV_Enterprises_Menu.pdf
 insert into menu_items (name, price, category) values
-    ('Vada Pav', 20.00, 'Snacks'),
-    ('Samosa', 15.00, 'Snacks'),
-    ('Veg Sandwich', 40.00, 'Snacks'),
-    ('Masala Maggi', 35.00, 'Snacks'),
-    ('Idli Sambar', 45.00, 'Meals'),
-    ('Veg Thali', 80.00, 'Meals'),
-    ('Chai', 10.00, 'Beverages'),
-    ('Cold Coffee', 40.00, 'Beverages'),
-    ('Bottled Water', 20.00, 'Beverages');
+    ('Poori', 60.00, 'Breakfast & Snacks'),
+    ('Lemon rice', 60.00, 'Breakfast & Snacks'),
+    ('Rice bath', 60.00, 'Breakfast & Snacks'),
+    ('Set Dosa', 60.00, 'Breakfast & Snacks'),
+    ('Masala dosa', 60.00, 'Breakfast & Snacks'),
+    ('Plain dosa', 60.00, 'Breakfast & Snacks'),
+    ('Onion dosa', 80.00, 'Breakfast & Snacks'),
+    ('Cheese Dosa', 90.00, 'Breakfast & Snacks'),
+    ('Khali dosa', 60.00, 'Breakfast & Snacks'),
+    ('Bread omlet', 70.00, 'Breakfast & Snacks'),
+    ('Chicken dosa', 100.00, 'Breakfast & Snacks'),
+    ('Chicken omlet', 100.00, 'Breakfast & Snacks'),
+    ('Cheese omlet', 80.00, 'Breakfast & Snacks'),
+    ('Mushroom omlet', 80.00, 'Breakfast & Snacks'),
+    ('Egg dosa', 70.00, 'Breakfast & Snacks'),
+    ('Samosa', 15.00, 'Breakfast & Snacks'),
+    ('Bread Pakoda', 15.00, 'Breakfast & Snacks'),
+    ('Jamun', 15.00, 'Breakfast & Snacks'),
+    ('Coffee', 15.00, 'Breakfast & Snacks'),
+    ('Tea', 15.00, 'Breakfast & Snacks'),
+
+    ('Chicken kabab', 100.00, 'Chicken Starters'),
+    ('Chilli chicken', 140.00, 'Chicken Starters'),
+    ('Chicken fry', 140.00, 'Chicken Starters'),
+    ('Chicken dry', 140.00, 'Chicken Starters'),
+    ('Chicken manchurian', 150.00, 'Chicken Starters'),
+    ('Garlic chicken', 150.00, 'Chicken Starters'),
+    ('Pepper chicken fry', 150.00, 'Chicken Starters'),
+    ('Ginger chicken', 150.00, 'Chicken Starters'),
+    ('Chicken 65', 150.00, 'Chicken Starters'),
+    ('Pudeena chicken', 150.00, 'Chicken Starters'),
+
+    ('Chicken curry', 120.00, 'Non-Veg Curry Items'),
+    ('Butter chicken', 150.00, 'Non-Veg Curry Items'),
+    ('Chicken masala', 130.00, 'Non-Veg Curry Items'),
+    ('Pepper chicken masala', 150.00, 'Non-Veg Curry Items'),
+    ('Egg bhurji', 50.00, 'Non-Veg Curry Items'),
+    ('Egg masala', 80.00, 'Non-Veg Curry Items'),
+    ('Egg manchurian', 80.00, 'Non-Veg Curry Items'),
+
+    ('Egg fried rice', 80.00, 'Non-Veg Rice Items'),
+    ('Chicken fried rice', 100.00, 'Non-Veg Rice Items'),
+    ('Egg noodles', 80.00, 'Non-Veg Rice Items'),
+    ('Chicken noodles', 100.00, 'Non-Veg Rice Items'),
+    ('White rice chicken curry', 120.00, 'Non-Veg Rice Items'),
+    ('Ghee rice chicken curry', 150.00, 'Non-Veg Rice Items'),
+    ('Jeera rice chicken curry', 150.00, 'Non-Veg Rice Items'),
+    ('Chicken Briyani', 100.00, 'Non-Veg Rice Items'),
+    ('Kuska', 70.00, 'Non-Veg Rice Items'),
+    ('Egg briyani', 80.00, 'Non-Veg Rice Items');

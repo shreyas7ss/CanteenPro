@@ -62,6 +62,20 @@ async def create_order_items(order_id: str, items: list[dict]) -> None:
         resp.raise_for_status()
 
 
+async def cancel_order(order_id: str) -> bool:
+    """Cancels the order only if it's still pending_payment. Returns whether it
+    actually cancelled anything (False if the order was already paid/ready/etc)."""
+    async with httpx.AsyncClient() as client:
+        resp = await client.patch(
+            f"{_REST_URL}/orders",
+            headers={**_HEADERS, "Prefer": "return=representation"},
+            params={"id": f"eq.{order_id}", "status": "eq.pending_payment"},
+            json={"status": "cancelled"},
+        )
+        resp.raise_for_status()
+        return len(resp.json()) > 0
+
+
 async def assign_next_token(order_id: str) -> int:
     async with httpx.AsyncClient() as client:
         resp = await client.post(

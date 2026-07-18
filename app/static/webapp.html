@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>LineZero</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #000000;
+    --hint: #999999;
+    --link: #2678b6;
+    --button: #2678b6;
+    --button-text: #ffffff;
+    --secondary-bg: #f0f0f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    padding-bottom: 24px;
+  }
+  .screen { display: none; padding: 12px 14px; }
+  .screen.active { display: block; }
+
+  h1.title {
+    font-size: 20px;
+    margin: 8px 0 4px;
+  }
+  .subtitle {
+    color: var(--hint);
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+
+  /* Home: category grid */
+  .category-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .category-card {
+    background: var(--secondary-bg);
+    border: none;
+    border-radius: 12px;
+    padding: 20px 10px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .category-card .emoji {
+    display: block;
+    font-size: 32px;
+    margin-bottom: 8px;
+  }
+
+  /* Home: cart preview panel */
+  .cart-panel {
+    border-top: 1px solid var(--secondary-bg);
+    padding-top: 12px;
+  }
+  .cart-panel h2 {
+    font-size: 15px;
+    margin: 0 0 8px;
+  }
+  .cart-panel ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+  }
+  .cart-panel li {
+    padding: 4px 0;
+  }
+  .cart-panel li::before {
+    content: "• ";
+    color: var(--hint);
+  }
+
+  /* Category item list */
+  .item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--secondary-bg);
+  }
+  .item-row .name { font-size: 15px; }
+  .item-row .price { color: var(--hint); font-size: 13px; margin-top: 2px; }
+  button.add-btn {
+    border: none;
+    background: var(--button);
+    color: var(--button-text);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .stepper .step-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: var(--button);
+    color: var(--button-text);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .stepper .qty {
+    min-width: 16px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Order review */
+  .review-line {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--secondary-bg);
+  }
+  .review-line .name-qty {
+    font-size: 15px;
+  }
+  .review-line .price-line {
+    color: var(--hint);
+    font-size: 13px;
+    margin-top: 2px;
+  }
+  .review-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 2px solid var(--secondary-bg);
+    margin-top: 10px;
+    padding-top: 12px;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .empty { color: var(--hint); font-size: 14px; padding: 20px 0; text-align: center; }
+</style>
+</head>
+<body>
+
+  <div id="screen-home" class="screen active">
+    <h1 class="title">LineZero</h1>
+    <div class="subtitle">Pick a category to start ordering.</div>
+    <div id="category-grid" class="category-grid"><div class="empty">Loading menu…</div></div>
+
+    <div class="cart-panel">
+      <h2 id="cart-heading">🛒 Cart</h2>
+      <div id="cart-preview"><div class="empty">Your cart is empty.</div></div>
+    </div>
+  </div>
+
+  <div id="screen-category" class="screen">
+    <h1 class="title" id="category-title">Category</h1>
+    <div id="category-items"></div>
+  </div>
+
+  <div id="screen-review" class="screen">
+    <h1 class="title">Order Summary</h1>
+    <div id="review-lines"></div>
+    <div class="review-total"><span>Total</span><span id="review-total-value">₹0.00</span></div>
+  </div>
+
+<script>
+  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+
+  const SUPABASE_URL = "https://dlurqyzhzyclcxghlvur.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_hVcENAV4TBUZtbyKB8kM7w_N7hvXU3O";
+
+  const CATEGORY_EMOJI = {
+    "Breakfast & Snacks": "\u{1F373}",
+    "Chicken Starters": "\u{1F357}",
+    "Non-Veg Curry Items": "\u{1F35B}",
+    "Non-Veg Rice Items": "\u{1F35A}",
+    "Beverages": "\u{1F964}",
+    "Desserts": "\u{1F370}",
+  };
+  const DEFAULT_EMOJI = "\u{1F37D}️";
+
+  const rupees = (n) => `₹${Number(n ?? 0).toFixed(2)}`;
+
+  // --- Telegram theme + chrome ---
+  function applyTheme() {
+    if (!tg) return;
+    const p = tg.themeParams || {};
+    const root = document.documentElement.style;
+    if (p.bg_color) root.setProperty("--bg", p.bg_color);
+    if (p.text_color) root.setProperty("--text", p.text_color);
+    if (p.hint_color) root.setProperty("--hint", p.hint_color);
+    if (p.link_color) root.setProperty("--link", p.link_color);
+    if (p.button_color) root.setProperty("--button", p.button_color);
+    if (p.button_text_color) root.setProperty("--button-text", p.button_text_color);
+    if (p.secondary_bg_color) root.setProperty("--secondary-bg", p.secondary_bg_color);
+  }
+
+  if (tg) {
+    tg.ready();
+    tg.expand();
+    applyTheme();
+    tg.onEvent("themeChanged", applyTheme);
+  }
+
+  // --- State ---
+  let menu = [];          // [{id, name, price, category}]
+  const cart = {};        // menu_item_id -> quantity
+  let activeCategory = null;
+  let screen = "home";
+
+  function showScreen(name) {
+    screen = name;
+    document.querySelectorAll(".screen").forEach((el) => el.classList.remove("active"));
+    document.getElementById(`screen-${name}`).classList.add("active");
+    updateChrome();
+  }
+
+  function cartQuantityTotal() {
+    return Object.values(cart).reduce((sum, q) => sum + q, 0);
+  }
+  function cartAmountTotal() {
+    return Object.entries(cart).reduce((sum, [id, q]) => {
+      const item = menu.find((m) => m.id === id);
+      return sum + (item ? item.price * q : 0);
+    }, 0);
+  }
+
+  // --- Telegram native chrome (MainButton / BackButton) per screen ---
+  function updateChrome() {
+    if (!tg) return;
+
+    tg.BackButton.offClick(handleBack);
+    tg.MainButton.offClick(handleMainButton);
+
+    if (screen === "home") {
+      tg.BackButton.hide();
+      const qty = cartQuantityTotal();
+      tg.MainButton.setText(qty > 0 ? `Checkout (${rupees(cartAmountTotal())})` : "Checkout");
+      tg.MainButton.show();
+      if (qty > 0) tg.MainButton.enable(); else tg.MainButton.disable();
+    } else if (screen === "category") {
+      tg.BackButton.show();
+      tg.MainButton.hide();
+    } else if (screen === "review") {
+      tg.BackButton.show();
+      tg.MainButton.setText(`Confirm order ${rupees(cartAmountTotal())}`);
+      tg.MainButton.show();
+      tg.MainButton.enable();
+    }
+
+    tg.BackButton.onClick(handleBack);
+    tg.MainButton.onClick(handleMainButton);
+  }
+
+  function handleBack() {
+    showScreen("home");
+  }
+
+  async function handleMainButton() {
+    if (screen === "home") {
+      if (cartQuantityTotal() === 0) return;
+      renderReview();
+      showScreen("review");
+    } else if (screen === "review") {
+      await confirmOrder();
+    }
+  }
+
+  // --- Home: categories + cart preview ---
+  function renderHome() {
+    const categories = [...new Set(menu.map((m) => m.category))];
+    const grid = document.getElementById("category-grid");
+    grid.innerHTML = categories.length
+      ? categories
+          .map(
+            (cat) => `
+            <button class="category-card" data-category="${cat}">
+              <span class="emoji">${CATEGORY_EMOJI[cat] || DEFAULT_EMOJI}</span>
+              ${cat}
+            </button>`
+          )
+          .join("")
+      : `<div class="empty">Menu unavailable right now.</div>`;
+
+    const previewEl = document.getElementById("cart-preview");
+    const headingEl = document.getElementById("cart-heading");
+    const qty = cartQuantityTotal();
+    headingEl.textContent = qty > 0 ? `\u{1F6D2} Cart (${qty} item${qty > 1 ? "s" : ""})` : "\u{1F6D2} Cart";
+
+    const lines = Object.entries(cart)
+      .map(([id, q]) => {
+        const item = menu.find((m) => m.id === id);
+        return item ? `${item.name} ×${q}` : null;
+      })
+      .filter(Boolean);
+    previewEl.innerHTML = lines.length
+      ? `<ul>${lines.map((line) => `<li>${line}</li>`).join("")}</ul>`
+      : `<div class="empty">Your cart is empty.</div>`;
+  }
+
+  document.getElementById("category-grid").addEventListener("click", (event) => {
+    const card = event.target.closest(".category-card");
+    if (!card) return;
+    openCategory(card.dataset.category);
+  });
+
+  // --- Category item list ---
+  function openCategory(category) {
+    activeCategory = category;
+    document.getElementById("category-title").textContent = `${CATEGORY_EMOJI[category] || DEFAULT_EMOJI} ${category}`;
+    renderCategoryItems();
+    showScreen("category");
+  }
+
+  function renderCategoryItems() {
+    const el = document.getElementById("category-items");
+    const items = menu.filter((m) => m.category === activeCategory);
+    el.innerHTML = items
+      .map((item) => {
+        const qty = cart[item.id] || 0;
+        const control = qty
+          ? `<div class="stepper">
+               <button class="step-btn" data-action="dec" data-id="${item.id}">−</button>
+               <span class="qty">${qty}</span>
+               <button class="step-btn" data-action="inc" data-id="${item.id}">+</button>
+             </div>`
+          : `<button class="add-btn" data-action="inc" data-id="${item.id}">Add to Cart</button>`;
+        return `
+          <div class="item-row">
+            <div>
+              <div class="name">${item.name}</div>
+              <div class="price">${rupees(item.price)}</div>
+            </div>
+            ${control}
+          </div>`;
+      })
+      .join("");
+  }
+
+  document.getElementById("category-items").addEventListener("click", (event) => {
+    const btn = event.target.closest("button[data-action]");
+    if (!btn) return;
+    const id = btn.dataset.id;
+    const delta = btn.dataset.action === "inc" ? 1 : -1;
+    const next = (cart[id] || 0) + delta;
+    if (next <= 0) delete cart[id];
+    else cart[id] = next;
+    if (tg) tg.HapticFeedback.selectionChanged();
+    renderCategoryItems();
+    renderHome();
+    updateChrome();
+  });
+
+  // --- Order review ---
+  function renderReview() {
+    const el = document.getElementById("review-lines");
+    el.innerHTML = Object.entries(cart)
+      .map(([id, qty]) => {
+        const item = menu.find((m) => m.id === id);
+        const subtotal = item.price * qty;
+        const priceLine = qty > 1 ? `${rupees(item.price)} × ${qty} = ${rupees(subtotal)}` : rupees(subtotal);
+        return `
+          <div class="review-line">
+            <div class="name-qty">${item.name} ×${qty}</div>
+            <div class="price-line">${priceLine}</div>
+          </div>`;
+      })
+      .join("");
+    document.getElementById("review-total-value").textContent = rupees(cartAmountTotal());
+  }
+
+  // --- Finalize: backend creates the order + pushes the pay message to chat, then we close ---
+  async function confirmOrder() {
+    const items = Object.entries(cart).map(([menu_item_id, quantity]) => ({ menu_item_id, quantity }));
+    tg && tg.MainButton.showProgress();
+    try {
+      const resp = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ init_data: tg ? tg.initData : "", items }),
+      });
+      if (!resp.ok) {
+        tg && tg.showAlert("Could not place the order. Please try again.");
+        return;
+      }
+      if (tg) {
+        tg.HapticFeedback.notificationOccurred("success");
+        tg.close();
+      }
+    } finally {
+      tg && tg.MainButton.hideProgress();
+    }
+  }
+
+  // --- Load menu ---
+  async function loadMenu() {
+    const resp = await fetch(
+      `${SUPABASE_URL}/rest/v1/menu_items?select=id,name,price,category&is_available=eq.true&order=category,name`,
+      { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }
+    );
+    menu = await resp.json();
+    menu = menu.map((m) => ({ ...m, price: Number(m.price) }));
+    renderHome();
+  }
+
+  loadMenu();
+  updateChrome();
+</script>
+</body>
+</html>
