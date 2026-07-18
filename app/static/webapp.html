@@ -153,6 +153,22 @@
   }
 
   .empty { color: var(--hint); font-size: 14px; padding: 20px 0; text-align: center; }
+
+  /* Pickup time slot */
+  .slot-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: var(--secondary-bg);
+    border: none;
+    border-radius: 10px;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -173,8 +189,18 @@
     <div id="category-items"></div>
   </div>
 
+  <div id="screen-slot" class="screen">
+    <h1 class="title">When should we prepare this?</h1>
+    <div class="subtitle">Choose a pickup time.</div>
+    <div id="slot-options">
+      <button class="slot-btn" data-slot="now">⚡ Right now</button>
+      <button class="slot-btn" data-slot="1030">🕥 At 10:30 AM (today)</button>
+    </div>
+  </div>
+
   <div id="screen-review" class="screen">
     <h1 class="title">Order Summary</h1>
+    <div class="subtitle" id="review-pickup"></div>
     <div id="review-lines"></div>
     <div class="review-total"><span>Total</span><span id="review-total-value">₹0.00</span></div>
   </div>
@@ -194,6 +220,7 @@
     "Desserts": "\u{1F370}",
   };
   const DEFAULT_EMOJI = "\u{1F37D}️";
+  const SLOT_LABELS = { now: "Right now", "1030": "10:30 AM (today)" };
 
   const rupees = (n) => `₹${Number(n ?? 0).toFixed(2)}`;
 
@@ -222,7 +249,10 @@
   let menu = [];          // [{id, name, price, category}]
   const cart = {};        // menu_item_id -> quantity
   let activeCategory = null;
+  let pickupSlot = null;  // "Right now" | "10:30 AM (today)"
   let screen = "home";
+
+  const BACK_TARGET = { category: "home", slot: "home", review: "slot" };
 
   function showScreen(name) {
     screen = name;
@@ -251,10 +281,10 @@
     if (screen === "home") {
       tg.BackButton.hide();
       const qty = cartQuantityTotal();
-      tg.MainButton.setText(qty > 0 ? `Checkout (${rupees(cartAmountTotal())})` : "Checkout");
+      tg.MainButton.setText(qty > 0 ? `Next (${rupees(cartAmountTotal())})` : "Next");
       tg.MainButton.show();
       if (qty > 0) tg.MainButton.enable(); else tg.MainButton.disable();
-    } else if (screen === "category") {
+    } else if (screen === "category" || screen === "slot") {
       tg.BackButton.show();
       tg.MainButton.hide();
     } else if (screen === "review") {
@@ -269,18 +299,26 @@
   }
 
   function handleBack() {
-    showScreen("home");
+    showScreen(BACK_TARGET[screen] || "home");
   }
 
   async function handleMainButton() {
     if (screen === "home") {
       if (cartQuantityTotal() === 0) return;
-      renderReview();
-      showScreen("review");
+      showScreen("slot");
     } else if (screen === "review") {
       await confirmOrder();
     }
   }
+
+  document.getElementById("slot-options").addEventListener("click", (event) => {
+    const btn = event.target.closest(".slot-btn");
+    if (!btn) return;
+    pickupSlot = SLOT_LABELS[btn.dataset.slot];
+    if (tg) tg.HapticFeedback.selectionChanged();
+    renderReview();
+    showScreen("review");
+  });
 
   // --- Home: categories + cart preview ---
   function renderHome() {
@@ -369,6 +407,7 @@
 
   // --- Order review ---
   function renderReview() {
+    document.getElementById("review-pickup").textContent = `Pickup: ${pickupSlot}`;
     const el = document.getElementById("review-lines");
     el.innerHTML = Object.entries(cart)
       .map(([id, qty]) => {
@@ -393,7 +432,7 @@
       const resp = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ init_data: tg ? tg.initData : "", items }),
+        body: JSON.stringify({ init_data: tg ? tg.initData : "", items, pickup_slot: pickupSlot }),
       });
       if (!resp.ok) {
         tg && tg.showAlert("Could not place the order. Please try again.");

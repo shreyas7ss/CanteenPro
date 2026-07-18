@@ -18,7 +18,7 @@ _WEBAPP_HTML = Path(__file__).parent / "static" / "webapp.html"
 
 @app.get("/app")
 async def serve_webapp():
-    return FileResponse(_WEBAPP_HTML)
+    return FileResponse(_WEBAPP_HTML, headers={"Cache-Control": "no-store, must-revalidate"})
 
 
 @app.get("/pay/{txn_id}")
@@ -44,6 +44,7 @@ async def api_create_order(request: Request):
     body = await request.json()
     telegram_user = _validated_user(body.get("init_data", ""))
     items = body.get("items", [])
+    pickup_slot = body.get("pickup_slot") or "Right now"
     if not items:
         raise HTTPException(status_code=400, detail="cart is empty")
 
@@ -73,6 +74,7 @@ async def api_create_order(request: Request):
         telegram_username=telegram_user.get("username"),
         total_amount=total,
         merchant_transaction_id=merchant_txn_id,
+        notes=f"Pickup: {pickup_slot}",
     )
     await db.create_order_items(order["id"], order_items)
 
@@ -82,19 +84,27 @@ async def api_create_order(request: Request):
         order_items=order_items,
         total=total,
         merchant_txn_id=merchant_txn_id,
+        pickup_slot=pickup_slot,
     )
 
     return {"order_id": order["id"], "total": total}
 
 
-async def _send_pay_message(*, chat_id: int, order_id: str, order_items: list[dict], total: float, merchant_txn_id: str) -> None:
+async def _send_pay_message(
+    *, chat_id: int, order_id: str, order_items: list[dict], total: float, merchant_txn_id: str, pickup_slot: str
+) -> None:
     note = f"LineZero order {merchant_txn_id[:8]}"
     pay_link = build_pay_link(total, merchant_txn_id, note)
     qr_png = build_qr_png(pay_link)
     pay_redirect_url = f"{UPI_REDIRECT_BASE_URL}/pay/{merchant_txn_id}?" + urlencode({"am": f"{total:.2f}", "tn": note})
 
     lines = [f"{item['quantity']} × {item['item_name']} — ₹{item['unit_price'] * item['quantity']:.2f}" for item in order_items]
-    caption = "🧾 Order Summary\n" + "\n".join(lines) + f"\n\nTotal: ₹{total:.2f}"
+    caption = (
+        "🧾 Order Summary\n"
+        + "\n".join(lines)
+        + f"\n\nPickup: {pickup_slot}"
+        + f"\nTotal: ₹{total:.2f}"
+    )
 
     keyboard = InlineKeyboardMarkup(
         [

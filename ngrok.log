@@ -1,38 +1,8 @@
-t=2026-07-17T11:38:34+0530 lvl=info msg="no configuration paths supplied"
-t=2026-07-17T11:38:34+0530 lvl=info msg="using configuration at default config path" path=C:\\Users\\shreyas\\AppData\\Local\\ngrok\\ngrok.yml
-t=2026-07-17T11:38:34+0530 lvl=info msg="open config file" path=C:\\Users\\shreyas\\AppData\\Local\\ngrok\\ngrok.yml err=nil
-t=2026-07-17T11:38:34+0530 lvl=info msg="FIPS 140 mode" enabled=false
-t=2026-07-17T11:38:34+0530 lvl=info msg="starting web service" obj=web addr=127.0.0.1:4040 allow_hosts=[]
-t=2026-07-17T11:38:34+0530 lvl=info msg="client session established" obj=tunnels.session
-t=2026-07-17T11:38:34+0530 lvl=info msg="tunnel session started" obj=tunnels.session
-t=2026-07-17T11:38:34+0530 lvl=info msg="started tunnel" obj=tunnels name=command_line addr=http://localhost:8080 url=https://3f6a-223-185-129-253.ngrok-free.app
-t=2026-07-17T11:38:42+0530 lvl=info msg=start pg=/api/tunnels id=c38c82abcd635dd8
-t=2026-07-17T11:38:42+0530 lvl=info msg=end pg=/api/tunnels id=c38c82abcd635dd8 status=200 dur=0s
-t=2026-07-17T11:38:50+0530 lvl=info msg=start pg=/api/tunnels id=fdc68fcc70a24b30
-t=2026-07-17T11:38:50+0530 lvl=info msg=end pg=/api/tunnels id=fdc68fcc70a24b30 status=200 dur=0s
-t=2026-07-17T11:39:22+0530 lvl=info msg="join connections" obj=join id=54a4f0839b50 l=127.0.0.1:8080 r=223.185.129.253:21738
-t=2026-07-17T12:11:45+0530 lvl=info msg="join connections" obj=join id=c8149db2c426 l=127.0.0.1:8080 r=223.185.129.253:9601
-t=2026-07-17T12:11:45+0530 lvl=info msg="join connections" obj=join id=8335035ab7f7 l=127.0.0.1:8080 r=223.185.129.253:4983
-t=2026-07-17T12:19:45+0530 lvl=info msg="join connections" obj=join id=a3a61d21e847 l=127.0.0.1:8080 r=223.185.129.253:8843
-t=2026-07-17T12:20:25+0530 lvl=info msg="join connections" obj=join id=f8382ec70c39 l=127.0.0.1:8080 r=223.185.129.253:31829
-t=2026-07-17T12:22:21+0530 lvl=info msg="join connections" obj=join id=24f08e4de536 l=127.0.0.1:8080 r=223.185.129.253:12757
-t=2026-07-17T12:22:21+0530 lvl=info msg="join connections" obj=join id=80cbae381fcd l=127.0.0.1:8080 r=223.185.129.253:6866
-t=2026-07-17T12:24:35+0530 lvl=info msg="join connections" obj=join id=2f869c83bd97 l=127.0.0.1:8080 r=[2401:4900:c92b:56f2:7059:b2aa:146e:ebc6]:34814
-t=2026-07-17T12:24:51+0530 lvl=info msg="join connections" obj=join id=66072c3236ac l=127.0.0.1:8080 r=[2401:4900:c92b:56f2:7059:b2aa:146e:ebc6]:34814
-t=2026-07-17T12:25:01+0530 lvl=info msg="join connections" obj=join id=39ab5834533c l=127.0.0.1:8080 r=[2401:4900:c92b:56f2:7059:b2aa:146e:ebc6]:34814
-t=2026-07-17T13:46:08+0530 lvl=info msg="join connections" obj=join id=8ce710016fac l=127.0.0.1:8080 r=223.185.129.253:30442
-t=2026-07-17T13:46:31+0530 lvl=info msg="join connections" obj=join id=2db7fae94bc4 l=127.0.0.1:8080 r=223.185.129.253:14582
-t=2026-07-17T13:47:08+0530 lvl=info msg="join connections" obj=join id=f5082dd70613 l=127.0.0.1:8080 r=223.185.129.253:19526
-t=2026-07-17T13:49:38+0530 lvl=info msg="join connections" obj=join id=0da7b38855e4 l=127.0.0.1:8080 r=223.185.129.253:6888
-t=2026-07-17T13:52:06+0530 lvl=info msg="join connections" obj=join id=f29ca4747405 l=127.0.0.1:8080 r=223.185.129.253:6888
-t=2026-07-17T13:52:19+0530 lvl=info msg="join connections" obj=join id=8af3a24c3682 l=127.0.0.1:8080 r=223.185.129.253:6888
-t=2026-07-17T13:54:07+0530 lvl=info msg="join connections" obj=join id=bb692280b727 l=127.0.0.1:8080 r=223.185.129.253:6888
-t=2026-07-17T13:58:27+0530 lvl=info msg="join connections" obj=join id=666777a1931a l=127.0.0.1:8080 r=223.185.129.253:6888
-t=2026-07-17T13:59:56+0530 lvl=info msg="join connections" obj=join id=f84104070c4e l=127.0.0.1:8080 r=223.185.129.253:4549
-t=2026-07-17T14:01:49+0530 lvl=info msg="join connections" obj=join id=26f0b1e086f2 l=127.0.0.1:8080 r=223.185.129.253:12901
-t=2026-07-17T14:03:08+0530 lvl=info msg="join connections" obj=join id=d3d3b2a20724 l=127.0.0.1:8080 r=223.185.129.253:12901
-t=2026-07-17T14:10:12+0530 lvl=info msg="join connections" obj=join id=0f883d1c3192 l=127.0.0.1:8080 r=223.185.129.253:14276
-t=2026-07-17T14:10:34+0530 lvl=info msg="join connections" obj=join id=2614b60eff1e l=127.0.0.1:8080 r=223.185.129.253:12936
-t=2026-07-17T14:13:50+0530 lvl=info msg="join connections" obj=join id=6360ec4cac86 l=127.0.0.1:8080 r=223.185.129.253:32923
-t=2026-07-17T14:14:59+0530 lvl=info msg="received stop request" obj=app stopReq="{err:<nil> restart:false}"
-t=2026-07-17T14:14:59+0530 lvl=info msg="session closing" obj=tunnels.session err=nil
+t=2026-07-18T13:16:28+0530 lvl=info msg="no configuration paths supplied"
+t=2026-07-18T13:16:28+0530 lvl=info msg="using configuration at default config path" path=C:\\Users\\shreyas\\AppData\\Local\\ngrok\\ngrok.yml
+t=2026-07-18T13:16:28+0530 lvl=info msg="open config file" path=C:\\Users\\shreyas\\AppData\\Local\\ngrok\\ngrok.yml err=nil
+t=2026-07-18T13:16:28+0530 lvl=info msg="FIPS 140 mode" enabled=false
+t=2026-07-18T13:16:29+0530 lvl=info msg="starting web service" obj=web addr=127.0.0.1:4040 allow_hosts=[]
+t=2026-07-18T13:16:29+0530 lvl=info msg="client session established" obj=tunnels.session
+t=2026-07-18T13:16:29+0530 lvl=info msg="tunnel session started" obj=tunnels.session
+t=2026-07-18T13:16:30+0530 lvl=info msg="started tunnel" obj=tunnels name=command_line addr=http://localhost:8080 url=https://119f-223-185-129-253.ngrok-free.app

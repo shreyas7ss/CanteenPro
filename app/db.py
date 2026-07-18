@@ -29,6 +29,7 @@ async def create_order(
     telegram_username: Optional[str],
     total_amount: float,
     merchant_transaction_id: str,
+    notes: Optional[str] = None,
 ) -> dict:
     async with httpx.AsyncClient() as client:
         resp = await client.post(
@@ -40,6 +41,7 @@ async def create_order(
                 "total_amount": total_amount,
                 "merchant_transaction_id": merchant_transaction_id,
                 "status": "pending_payment",
+                "notes": notes,
             },
         )
         resp.raise_for_status()

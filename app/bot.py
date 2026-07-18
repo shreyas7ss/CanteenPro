@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import httpx
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, MenuButtonWebApp, Update, WebAppInfo
 from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes
@@ -5,7 +7,12 @@ from telegram.ext import Application, CallbackQueryHandler, CommandHandler, Cont
 from app import db
 from app.config import TELEGRAM_BOT_TOKEN, UPI_REDIRECT_BASE_URL
 
-WEBAPP_URL = f"{UPI_REDIRECT_BASE_URL}/app"
+# Telegram caches Mini App content by URL, sometimes aggressively, independent of
+# HTTP cache headers. Appending the file's mtime busts that cache on every code
+# change, since the URL itself changes rather than relying on Telegram to notice
+# the content did.
+_WEBAPP_VERSION = int((Path(__file__).parent / "static" / "webapp.html").stat().st_mtime)
+WEBAPP_URL = f"{UPI_REDIRECT_BASE_URL}/app?v={_WEBAPP_VERSION}"
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
