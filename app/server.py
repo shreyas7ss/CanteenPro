@@ -14,11 +14,17 @@ from app.upi import build_pay_link, build_qr_png
 app = FastAPI()
 
 _WEBAPP_HTML = Path(__file__).parent / "static" / "webapp.html"
+_LOGO_PNG = Path(__file__).parent / "static" / "logo.png"
 
 
 @app.get("/app")
 async def serve_webapp():
     return FileResponse(_WEBAPP_HTML, headers={"Cache-Control": "no-store, must-revalidate"})
+
+
+@app.get("/logo.png")
+async def serve_logo():
+    return FileResponse(_LOGO_PNG)
 
 
 @app.get("/pay/{txn_id}")

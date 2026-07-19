@@ -7,13 +7,15 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   :root {
-    --bg: #ffffff;
-    --text: #000000;
-    --hint: #999999;
-    --link: #2678b6;
-    --button: #2678b6;
-    --button-text: #ffffff;
-    --secondary-bg: #f0f0f0;
+    --bg: #f2f3f7;
+    --header-bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #f2f3f7;
+    --text: #17171c;
+    --hint: #7c7c88;
+    --accent: #ff4d6d;
+    --accent-text: #ffffff;
+    --shadow: 0 2px 12px rgba(23, 23, 28, 0.08);
   }
   * { box-sizing: border-box; }
   body {
@@ -23,50 +25,164 @@
     font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
     padding-bottom: 24px;
   }
-  .screen { display: none; padding: 12px 14px; }
-  .screen.active { display: block; }
+  .screen { display: none; }
+  .screen.active { display: block; animation: fade-in 0.22s ease; }
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .screen.active { animation: none; }
+  }
+  .screen-pad { padding: 16px; }
 
+  h1.headline {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.25;
+    margin: 0 0 2px;
+  }
+  h1.headline .accent { color: var(--accent); }
   h1.title {
     font-size: 20px;
+    font-weight: 700;
     margin: 8px 0 4px;
   }
   .subtitle {
     color: var(--hint);
     font-size: 13px;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
+  }
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--hint);
+    text-transform: uppercase;
+    margin: 4px 0 10px;
   }
 
-  /* Home: category grid */
-  .category-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+  /* Home header: pure white, same as the logo's own background, so the logo
+     sits flush with no visible box around it */
+  .home-header {
+    background: var(--header-bg);
+    padding: 20px 16px 18px;
+    border-radius: 0 0 26px 26px;
+    box-shadow: var(--shadow);
     margin-bottom: 18px;
   }
-  .category-card {
-    background: var(--secondary-bg);
-    border: none;
-    border-radius: 12px;
-    padding: 20px 10px;
-    text-align: center;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-    cursor: pointer;
-  }
-  .category-card .emoji {
+  .brand-logo {
     display: block;
-    font-size: 32px;
-    margin-bottom: 8px;
+    height: 40px;
+    width: auto;
+    margin-bottom: 12px;
   }
 
-  /* Home: cart preview panel */
+  /* Category pills */
+  .pill-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-bottom: 18px;
+    scrollbar-width: none;
+  }
+  .pill-row::-webkit-scrollbar { display: none; }
+  .pill {
+    flex: 0 0 auto;
+    border: 1px solid var(--surface-2);
+    border-radius: 999px;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 0.1s ease;
+  }
+  .pill:active { transform: scale(0.95); }
+  .pill.selected {
+    background: var(--accent);
+    color: var(--accent-text);
+    border-color: var(--accent);
+  }
+
+  /* Item rows */
+  .item-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    border-radius: 16px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .item-row .thumb {
+    flex: 0 0 auto;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+  .item-row .info { flex: 1 1 auto; min-width: 0; }
+  .item-row .name { font-size: 15px; font-weight: 700; }
+  .item-row .price { color: var(--hint); font-size: 13px; margin-top: 2px; }
+
+  button.add-btn {
+    flex: 0 0 auto;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent);
+    color: var(--accent-text);
+    font-size: 18px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+  }
+  button.add-btn:active { transform: scale(0.9); }
+  .stepper {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .stepper .step-btn {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent);
+    color: var(--accent-text);
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+  }
+  .stepper .step-btn:active { transform: scale(0.88); }
+  .stepper .qty {
+    min-width: 16px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Cart preview panel */
   .cart-panel {
-    border-top: 1px solid var(--secondary-bg);
-    padding-top: 12px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    border-radius: 18px;
+    padding: 14px 16px;
+    margin-top: 8px;
   }
   .cart-panel h2 {
-    font-size: 15px;
+    font-size: 14px;
+    font-weight: 700;
     margin: 0 0 8px;
   }
   .cart-panel ul {
@@ -75,121 +191,76 @@
     padding: 0;
     font-size: 14px;
   }
-  .cart-panel li {
-    padding: 4px 0;
-  }
-  .cart-panel li::before {
-    content: "• ";
-    color: var(--hint);
-  }
-
-  /* Category item list */
-  .item-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--secondary-bg);
-  }
-  .item-row .name { font-size: 15px; }
-  .item-row .price { color: var(--hint); font-size: 13px; margin-top: 2px; }
-  button.add-btn {
-    border: none;
-    background: var(--button);
-    color: var(--button-text);
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .stepper {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .stepper .step-btn {
-    width: 32px; height: 32px;
-    border-radius: 8px;
-    border: none;
-    background: var(--button);
-    color: var(--button-text);
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-  }
-  .stepper .qty {
-    min-width: 16px;
-    text-align: center;
-    font-size: 15px;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* Order review */
-  .review-line {
-    padding: 10px 0;
-    border-bottom: 1px solid var(--secondary-bg);
-  }
-  .review-line .name-qty {
-    font-size: 15px;
-  }
-  .review-line .price-line {
-    color: var(--hint);
-    font-size: 13px;
-    margin-top: 2px;
-  }
-  .review-total {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 2px solid var(--secondary-bg);
-    margin-top: 10px;
-    padding-top: 12px;
-    font-size: 18px;
-    font-weight: 700;
-  }
-
-  .empty { color: var(--hint); font-size: 14px; padding: 20px 0; text-align: center; }
+  .cart-panel li { padding: 3px 0; }
+  .cart-panel li::before { content: "• "; color: var(--accent); }
 
   /* Pickup time slot */
   .slot-btn {
     display: block;
     width: 100%;
     text-align: left;
-    background: var(--secondary-bg);
+    background: var(--surface);
+    box-shadow: var(--shadow);
     border: none;
-    border-radius: 10px;
+    border-radius: 16px;
     padding: 16px;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text);
     margin-bottom: 10px;
     cursor: pointer;
+    transition: transform 0.1s ease;
   }
+  .slot-btn:active { transform: scale(0.97); }
+
+  /* Order review */
+  .review-line {
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    border-radius: 16px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .review-line .name-qty { font-size: 15px; font-weight: 700; }
+  .review-line .price-line { color: var(--hint); font-size: 13px; margin-top: 3px; }
+  .review-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--accent);
+    color: var(--accent-text);
+    border-radius: 16px;
+    margin-top: 14px;
+    padding: 14px 16px;
+    font-size: 19px;
+    font-weight: 800;
+  }
+
+  .empty { color: var(--hint); font-size: 14px; padding: 20px 0; text-align: center; }
 </style>
 </head>
 <body>
 
   <div id="screen-home" class="screen active">
-    <h1 class="title">LineZero</h1>
-    <div class="subtitle">Pick a category to start ordering.</div>
-    <div id="category-grid" class="category-grid"><div class="empty">Loading menu…</div></div>
+    <div class="home-header">
+      <img class="brand-logo" src="/logo.png" alt="College logo" />
+      <h1 class="headline">What would you <span class="accent">like</span> to order?</h1>
+    </div>
 
-    <div class="cart-panel">
-      <h2 id="cart-heading">🛒 Cart</h2>
-      <div id="cart-preview"><div class="empty">Your cart is empty.</div></div>
+    <div class="screen-pad" style="padding-top:0;">
+      <div class="eyebrow">Choose your category</div>
+      <div id="pill-row" class="pill-row"><div class="empty">Loading menu…</div></div>
+
+      <div id="item-list"></div>
+
+      <div class="cart-panel">
+        <h2 id="cart-heading">🛒 Cart</h2>
+        <div id="cart-preview"><div class="empty">Your cart is empty.</div></div>
+      </div>
     </div>
   </div>
 
-  <div id="screen-category" class="screen">
-    <h1 class="title" id="category-title">Category</h1>
-    <div id="category-items"></div>
-  </div>
-
-  <div id="screen-slot" class="screen">
+  <div id="screen-slot" class="screen screen-pad">
     <h1 class="title">When should we prepare this?</h1>
     <div class="subtitle">Choose a pickup time.</div>
     <div id="slot-options">
@@ -198,7 +269,7 @@
     </div>
   </div>
 
-  <div id="screen-review" class="screen">
+  <div id="screen-review" class="screen screen-pad">
     <h1 class="title">Order Summary</h1>
     <div class="subtitle" id="review-pickup"></div>
     <div id="review-lines"></div>
@@ -211,6 +282,9 @@
   const SUPABASE_URL = "https://dlurqyzhzyclcxghlvur.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_hVcENAV4TBUZtbyKB8kM7w_N7hvXU3O";
 
+  const ACCENT = "#ff4d6d";
+  const ACCENT_TEXT = "#ffffff";
+
   const CATEGORY_EMOJI = {
     "Breakfast & Snacks": "\u{1F373}",
     "Chicken Starters": "\u{1F357}",
@@ -222,27 +296,17 @@
   const DEFAULT_EMOJI = "\u{1F37D}️";
   const SLOT_LABELS = { now: "Right now", "1030": "10:30 AM (today)" };
 
-  const rupees = (n) => `₹${Number(n ?? 0).toFixed(2)}`;
+  // A fixed vibrant color per category (cycled by index), used as a soft-tint
+  // thumbnail background so the list doesn't read as flat/monochrome.
+  const ICON_COLORS = ["#ff6b4a", "#ffb020", "#3ddc97", "#7c3aed", "#ff4d6d", "#00b8d9"];
+  const categoryColor = (categories, cat) => ICON_COLORS[categories.indexOf(cat) % ICON_COLORS.length];
 
-  // --- Telegram theme + chrome ---
-  function applyTheme() {
-    if (!tg) return;
-    const p = tg.themeParams || {};
-    const root = document.documentElement.style;
-    if (p.bg_color) root.setProperty("--bg", p.bg_color);
-    if (p.text_color) root.setProperty("--text", p.text_color);
-    if (p.hint_color) root.setProperty("--hint", p.hint_color);
-    if (p.link_color) root.setProperty("--link", p.link_color);
-    if (p.button_color) root.setProperty("--button", p.button_color);
-    if (p.button_text_color) root.setProperty("--button-text", p.button_text_color);
-    if (p.secondary_bg_color) root.setProperty("--secondary-bg", p.secondary_bg_color);
-  }
+  const rupees = (n) => `₹${Number(n ?? 0).toFixed(2)}`;
 
   if (tg) {
     tg.ready();
     tg.expand();
-    applyTheme();
-    tg.onEvent("themeChanged", applyTheme);
+    tg.MainButton.setParams({ color: ACCENT, text_color: ACCENT_TEXT });
   }
 
   // --- State ---
@@ -252,7 +316,7 @@
   let pickupSlot = null;  // "Right now" | "10:30 AM (today)"
   let screen = "home";
 
-  const BACK_TARGET = { category: "home", slot: "home", review: "slot" };
+  const BACK_TARGET = { slot: "home", review: "slot" };
 
   function showScreen(name) {
     screen = name;
@@ -284,7 +348,7 @@
       tg.MainButton.setText(qty > 0 ? `Next (${rupees(cartAmountTotal())})` : "Next");
       tg.MainButton.show();
       if (qty > 0) tg.MainButton.enable(); else tg.MainButton.disable();
-    } else if (screen === "category" || screen === "slot") {
+    } else if (screen === "slot") {
       tg.BackButton.show();
       tg.MainButton.hide();
     } else if (screen === "review") {
@@ -320,22 +384,51 @@
     showScreen("review");
   });
 
-  // --- Home: categories + cart preview ---
-  function renderHome() {
+  // --- Home: category pills + filtered item list + cart preview ---
+  function renderPills() {
     const categories = [...new Set(menu.map((m) => m.category))];
-    const grid = document.getElementById("category-grid");
-    grid.innerHTML = categories.length
+    if (!activeCategory) activeCategory = categories[0];
+    const el = document.getElementById("pill-row");
+    el.innerHTML = categories.length
       ? categories
           .map(
             (cat) => `
-            <button class="category-card" data-category="${cat}">
-              <span class="emoji">${CATEGORY_EMOJI[cat] || DEFAULT_EMOJI}</span>
-              ${cat}
+            <button class="pill${cat === activeCategory ? " selected" : ""}" data-category="${cat}">
+              ${CATEGORY_EMOJI[cat] || DEFAULT_EMOJI} ${cat}
             </button>`
           )
           .join("")
       : `<div class="empty">Menu unavailable right now.</div>`;
+  }
 
+  function renderItemList() {
+    const el = document.getElementById("item-list");
+    const categories = [...new Set(menu.map((m) => m.category))];
+    const items = menu.filter((m) => m.category === activeCategory);
+    el.innerHTML = items
+      .map((item) => {
+        const qty = cart[item.id] || 0;
+        const control = qty
+          ? `<div class="stepper">
+               <button class="step-btn" data-action="dec" data-id="${item.id}">−</button>
+               <span class="qty">${qty}</span>
+               <button class="step-btn" data-action="inc" data-id="${item.id}">+</button>
+             </div>`
+          : `<button class="add-btn" data-action="inc" data-id="${item.id}">+</button>`;
+        return `
+          <div class="item-row">
+            <div class="thumb" style="background:${categoryColor(categories, item.category)}26">${CATEGORY_EMOJI[item.category] || DEFAULT_EMOJI}</div>
+            <div class="info">
+              <div class="name">${item.name}</div>
+              <div class="price">${rupees(item.price)}</div>
+            </div>
+            ${control}
+          </div>`;
+      })
+      .join("");
+  }
+
+  function renderCartPreview() {
     const previewEl = document.getElementById("cart-preview");
     const headingEl = document.getElementById("cart-heading");
     const qty = cartQuantityTotal();
@@ -352,46 +445,22 @@
       : `<div class="empty">Your cart is empty.</div>`;
   }
 
-  document.getElementById("category-grid").addEventListener("click", (event) => {
-    const card = event.target.closest(".category-card");
-    if (!card) return;
-    openCategory(card.dataset.category);
+  function renderHome() {
+    renderPills();
+    renderItemList();
+    renderCartPreview();
+  }
+
+  document.getElementById("pill-row").addEventListener("click", (event) => {
+    const pill = event.target.closest(".pill");
+    if (!pill) return;
+    activeCategory = pill.dataset.category;
+    if (tg) tg.HapticFeedback.selectionChanged();
+    renderPills();
+    renderItemList();
   });
 
-  // --- Category item list ---
-  function openCategory(category) {
-    activeCategory = category;
-    document.getElementById("category-title").textContent = `${CATEGORY_EMOJI[category] || DEFAULT_EMOJI} ${category}`;
-    renderCategoryItems();
-    showScreen("category");
-  }
-
-  function renderCategoryItems() {
-    const el = document.getElementById("category-items");
-    const items = menu.filter((m) => m.category === activeCategory);
-    el.innerHTML = items
-      .map((item) => {
-        const qty = cart[item.id] || 0;
-        const control = qty
-          ? `<div class="stepper">
-               <button class="step-btn" data-action="dec" data-id="${item.id}">−</button>
-               <span class="qty">${qty}</span>
-               <button class="step-btn" data-action="inc" data-id="${item.id}">+</button>
-             </div>`
-          : `<button class="add-btn" data-action="inc" data-id="${item.id}">Add to Cart</button>`;
-        return `
-          <div class="item-row">
-            <div>
-              <div class="name">${item.name}</div>
-              <div class="price">${rupees(item.price)}</div>
-            </div>
-            ${control}
-          </div>`;
-      })
-      .join("");
-  }
-
-  document.getElementById("category-items").addEventListener("click", (event) => {
+  document.getElementById("item-list").addEventListener("click", (event) => {
     const btn = event.target.closest("button[data-action]");
     if (!btn) return;
     const id = btn.dataset.id;
@@ -400,8 +469,8 @@
     if (next <= 0) delete cart[id];
     else cart[id] = next;
     if (tg) tg.HapticFeedback.selectionChanged();
-    renderCategoryItems();
-    renderHome();
+    renderItemList();
+    renderCartPreview();
     updateChrome();
   });
 

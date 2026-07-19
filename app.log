@@ -1,4 +1,4 @@
-INFO:     Started server process [25324]
+INFO:     Started server process [1980]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
@@ -6,6 +6,3 @@ INFO:httpx:HTTP Request: POST https://api.telegram.org/bot8767048663:AAG0ETYTDb3
 INFO:httpx:HTTP Request: POST https://api.telegram.org/bot8767048663:AAG0ETYTDb33j7usC_KWD1m4xGLjqqYCJW0/setChatMenuButton "HTTP/1.1 200 OK"
 INFO:telegram.ext.Application:Application started
 INFO:httpx:HTTP Request: POST https://api.telegram.org/bot8767048663:AAG0ETYTDb33j7usC_KWD1m4xGLjqqYCJW0/deleteWebhook "HTTP/1.1 200 OK"
-INFO:httpx:HTTP Request: POST https://api.telegram.org/bot8767048663:AAG0ETYTDb33j7usC_KWD1m4xGLjqqYCJW0/getUpdates "HTTP/1.1 200 OK"
-INFO:     223.185.129.253:0 - "GET /app?v=1234567890 HTTP/1.1" 200 OK
-INFO:httpx:HTTP Request: POST https://api.telegram.org/bot8767048663:AAG0ETYTDb33j7usC_KWD1m4xGLjqqYCJW0/getUpdates "HTTP/1.1 200 OK"
