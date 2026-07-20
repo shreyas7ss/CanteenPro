@@ -71,7 +71,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     flex-wrap: wrap;
   }
   header.top h1 {
@@ -119,6 +119,31 @@
     border-radius: 4px;
   }
 
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 2px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .tab-btn.active {
+    color: var(--text-primary);
+    border-bottom-color: var(--series-1);
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
   .stat-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -141,16 +166,6 @@
     font-weight: 600;
   }
 
-  .board {
-    display: grid;
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-    gap: 20px;
-    align-items: start;
-  }
-  @media (max-width: 760px) {
-    .board { grid-template-columns: 1fr; }
-  }
-
   .panel {
     background: var(--surface-1);
     border: 1px solid var(--border);
@@ -167,61 +182,6 @@
     padding: 12px 0;
   }
 
-  .order-card {
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
-    margin-bottom: 10px;
-  }
-  .order-card:last-child { margin-bottom: 0; }
-  .order-card .row1 {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 6px;
-  }
-  .token {
-    font-size: 20px;
-    font-weight: 600;
-  }
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 3px 10px;
-  }
-  .badge .dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-  }
-  .badge.paid .dot { background: var(--status-warning); }
-  .badge.ready .dot { background: var(--status-good); }
-
-  .order-items {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin: 6px 0;
-  }
-  .order-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-top: 10px;
-  }
-  .order-meta .elapsed {
-    font-size: 12px;
-    color: var(--text-muted);
-  }
-  .order-meta .total {
-    font-size: 13px;
-    font-weight: 600;
-  }
   button.action {
     background: var(--series-1);
     color: #fff;
@@ -231,43 +191,162 @@
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
+    white-space: nowrap;
   }
   button.action:disabled {
     opacity: 0.6;
     cursor: default;
   }
 
+  #top-items {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
   .bar-row {
     display: grid;
-    grid-template-columns: 100px 1fr 44px;
+    grid-template-columns: 128px 1fr 28px;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
+    gap: 14px;
+    padding: 7px 6px;
+    border-radius: 6px;
     font-size: 13px;
+    transition: background-color 0.12s ease;
   }
+  .bar-row:hover { background: var(--page); }
   .bar-row .name {
-    color: var(--text-secondary);
+    color: var(--text-primary);
+    font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   .bar-track {
     background: var(--gridline);
-    border-radius: 4px;
-    height: 12px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    height: 10px;
     position: relative;
+    overflow: hidden;
   }
   .bar-fill {
     background: var(--series-1);
-    height: 12px;
+    height: 100%;
     border-radius: 0 4px 4px 0;
-    min-width: 4px;
+    min-width: 6px;
   }
   .bar-row .count {
     text-align: right;
     color: var(--text-primary);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Sub-tabs (Pending: Right now / Lunch break) */
+  .subtabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .subtab-btn {
+    border: 1px solid var(--border);
+    background: var(--surface-1);
+    color: var(--text-secondary);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .subtab-btn.active {
+    background: var(--series-1);
+    color: #fff;
+    border-color: var(--series-1);
+  }
+  .subtab-btn .count {
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--page);
+    color: var(--text-secondary);
+    border-radius: 999px;
+    padding: 1px 7px;
+  }
+  .subtab-btn.active .count {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+  }
+
+  /* Dropdown filter (Completed: pickup slot) */
+  .filter-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .filter-row label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  .select-filter {
+    border: 1px solid var(--border);
+    background: var(--surface-1);
+    color: var(--text-primary);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .pending-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+  @media (max-width: 760px) {
+    .pending-grid { grid-template-columns: 1fr; }
+  }
+  table.summary-table tr.total-row td {
+    border-top: 1px solid var(--gridline);
+    border-bottom: none;
     font-weight: 600;
   }
+
+  /* Orders table */
+  .table-scroll { overflow-x: auto; }
+  table.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table.orders-table th {
+    text-align: left;
+    padding: 10px 12px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 12px;
+    border-bottom: 1px solid var(--gridline);
+    white-space: nowrap;
+  }
+  table.orders-table th.sortable {
+    cursor: pointer;
+    user-select: none;
+  }
+  table.orders-table th.sortable:hover { color: var(--text-primary); }
+  table.orders-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--gridline);
+    vertical-align: top;
+  }
+  table.orders-table tbody tr:last-child td { border-bottom: none; }
+  table.orders-table td.token { font-weight: 600; }
+  .sort-arrow { font-size: 10px; margin-left: 4px; opacity: 0.6; }
 </style>
 </head>
 <body>
@@ -290,34 +369,81 @@
     <code>&lt;script&gt;</code> block before deploying — the dashboard can't load data without them.
   </div>
 
-  <div class="stat-row">
-    <div class="stat-tile">
-      <div class="label">Orders today</div>
-      <div class="value" id="stat-orders">–</div>
-    </div>
-    <div class="stat-tile">
-      <div class="label">Revenue today</div>
-      <div class="value" id="stat-revenue">–</div>
-    </div>
-    <div class="stat-tile">
-      <div class="label">Avg order value</div>
-      <div class="value" id="stat-avg">–</div>
-    </div>
-    <div class="stat-tile">
-      <div class="label">In queue now</div>
-      <div class="value" id="stat-queue">–</div>
-    </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="summary" type="button">Summary</button>
+    <button class="tab-btn" data-tab="pending" type="button">Pending orders</button>
+    <button class="tab-btn" data-tab="completed" type="button">Completed orders</button>
   </div>
 
-  <div class="board">
-    <div class="panel">
-      <h2>Active queue</h2>
-      <div id="queue-list"><div class="empty">Loading…</div></div>
+  <!-- Summary -->
+  <div class="tab-panel active" id="tab-summary">
+    <div class="stat-row">
+      <div class="stat-tile">
+        <div class="label">Orders today</div>
+        <div class="value" id="stat-orders">–</div>
+      </div>
+      <div class="stat-tile">
+        <div class="label">Revenue today</div>
+        <div class="value" id="stat-revenue">–</div>
+      </div>
+      <div class="stat-tile">
+        <div class="label">Avg order value</div>
+        <div class="value" id="stat-avg">–</div>
+      </div>
+      <div class="stat-tile">
+        <div class="label">Pending now</div>
+        <div class="value" id="stat-pending">–</div>
+      </div>
+      <div class="stat-tile">
+        <div class="label">Completed today</div>
+        <div class="value" id="stat-completed">–</div>
+      </div>
     </div>
 
     <div class="panel">
       <h2>Top items sold today</h2>
       <div id="top-items"><div class="empty">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- Pending -->
+  <div class="tab-panel" id="tab-pending">
+    <div class="subtabs">
+      <button class="subtab-btn active" data-subtab="now" type="button">⚡ Right now <span class="count">0</span></button>
+      <button class="subtab-btn" data-subtab="lunch" type="button">🍽️ Lunch break <span class="count">0</span></button>
+    </div>
+    <div id="pending-sections">
+      <div class="panel"><div class="empty">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- Completed -->
+  <div class="tab-panel" id="tab-completed">
+    <div class="filter-row">
+      <label for="completed-slot-select">Pickup slot</label>
+      <select id="completed-slot-select" class="select-filter">
+        <option value="all" selected>All</option>
+        <option value="now">Right now</option>
+        <option value="lunch">Lunch break</option>
+      </select>
+    </div>
+    <div class="panel">
+      <div class="table-scroll">
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th class="sortable" data-key="token_number">Token<span class="sort-arrow"></span></th>
+              <th>Items (qty)</th>
+              <th>Time slot</th>
+              <th class="sortable" data-key="total_amount">Total<span class="sort-arrow"></span></th>
+              <th class="sortable" data-key="completed_at">Completed<span class="sort-arrow"></span></th>
+            </tr>
+          </thead>
+          <tbody id="completed-table-body">
+            <tr><td colspan="5" class="empty">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -366,48 +492,32 @@
     return `${Math.floor(mins / 60)}h ${mins % 60}m ago`;
   }
 
-  async function markReady(orderId) {
-    await supabase.from("orders").update({ status: "ready", ready_at: new Date().toISOString() }).eq("id", orderId);
+  function parseSlot(notes) {
+    if (!notes) return "—";
+    const m = notes.match(/^Pickup:\s*(.+)$/);
+    return m ? m[1] : notes;
   }
 
+  function formatItems(items) {
+    return (items || []).map((it) => `${it.quantity} × ${it.item_name}`).join(", ") || "—";
+  }
+
+  // ---------- Tabs ----------
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
+    });
+  });
+
+  // ---------- Actions ----------
   async function markCompleted(orderId) {
     await supabase.from("orders").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", orderId);
   }
 
-  function renderQueue(orders) {
-    const el = document.getElementById("queue-list");
-    if (!orders.length) {
-      el.innerHTML = `<div class="empty">No paid orders waiting right now.</div>`;
-      return;
-    }
-    el.innerHTML = orders
-      .map((order) => {
-        const items = (order.order_items || [])
-          .map((it) => `${it.quantity} × ${it.item_name}`)
-          .join(", ");
-        const isPaid = order.status === "paid";
-        const badgeClass = isPaid ? "paid" : "ready";
-        const badgeText = isPaid ? "Preparing" : "Ready for pickup";
-        const actionLabel = isPaid ? "Mark ready" : "Mark completed";
-        return `
-          <div class="order-card" data-id="${order.id}">
-            <div class="row1">
-              <span class="token">#${order.token_number ?? "–"}</span>
-              <span class="badge ${badgeClass}"><span class="dot"></span>${badgeText}</span>
-            </div>
-            <div class="order-items">${items || "—"}</div>
-            <div class="order-meta">
-              <span class="elapsed" data-placed="${order.placed_at}">${elapsedLabel(order.placed_at)}</span>
-              <span class="total">${rupees(order.total_amount)}</span>
-              <button class="action" data-action="${isPaid ? "ready" : "completed"}" data-id="${order.id}">
-                ${actionLabel}
-              </button>
-            </div>
-          </div>`;
-      })
-      .join("");
-  }
-
+  // ---------- Top items ----------
   function renderTopItems(rows) {
     const el = document.getElementById("top-items");
     if (!rows.length) {
@@ -427,20 +537,6 @@
       .join("");
   }
 
-  async function refreshQueue() {
-    const { data, error } = await supabase
-      .from("orders")
-      .select("id, token_number, total_amount, status, placed_at, order_items(item_name, quantity)")
-      .in("status", ["paid", "ready"])
-      .order("token_number", { ascending: true });
-    if (error) {
-      console.error("refreshQueue failed", error);
-      return;
-    }
-    renderQueue(data);
-    document.getElementById("stat-queue").textContent = data.length;
-  }
-
   async function refreshStats() {
     const { data, error } = await supabase
       .from("orders")
@@ -453,9 +549,13 @@
     }
     const count = data.length;
     const revenue = data.reduce((sum, o) => sum + Number(o.total_amount), 0);
+    const pending = data.filter((o) => o.status === "paid" || o.status === "ready").length;
+    const completed = data.filter((o) => o.status === "completed").length;
     document.getElementById("stat-orders").textContent = count;
     document.getElementById("stat-revenue").textContent = rupees(revenue);
     document.getElementById("stat-avg").textContent = rupees(count ? revenue / count : 0);
+    document.getElementById("stat-pending").textContent = pending;
+    document.getElementById("stat-completed").textContent = completed;
   }
 
   async function refreshTopItems() {
@@ -479,25 +579,227 @@
     renderTopItems(ranked);
   }
 
-  async function refreshAll() {
-    await Promise.all([refreshQueue(), refreshStats(), refreshTopItems()]);
+  // ---------- Pending orders ----------
+  let pendingData = [];
+  let pendingSubtab = "now";
+
+  // The mini app offers "Right now" plus one later pickup window. That later
+  // window's exact clock time isn't fixed, so bucket everything that isn't
+  // "Right now" into "Lunch break" rather than matching a literal time string.
+  function slotKey(notes) {
+    return parseSlot(notes) === "Right now" ? "now" : "lunch";
   }
 
-  document.getElementById("queue-list").addEventListener("click", async (event) => {
+  function computeItemTotals(orders) {
+    const totals = {};
+    for (const order of orders) {
+      for (const it of order.order_items || []) {
+        totals[it.item_name] = (totals[it.item_name] || 0) + it.quantity;
+      }
+    }
+    return Object.entries(totals)
+      .map(([item_name, quantity]) => ({ item_name, quantity }))
+      .sort((a, b) => b.quantity - a.quantity);
+  }
+
+  function itemSummaryTableHTML(rows) {
+    if (!rows.length) return `<div class="empty">Nothing needed yet.</div>`;
+    const grandTotal = rows.reduce((sum, r) => sum + r.quantity, 0);
+    return `
+      <table class="orders-table summary-table">
+        <thead><tr><th>Food item</th><th>Quantity</th></tr></thead>
+        <tbody>
+          ${rows.map((r) => `<tr><td>${r.item_name}</td><td>${r.quantity}</td></tr>`).join("")}
+          <tr class="total-row"><td>Grand total</td><td>${grandTotal}</td></tr>
+        </tbody>
+      </table>`;
+  }
+
+  function pendingOrdersTableHTML(orders) {
+    if (!orders.length) {
+      return `<tr><td colspan="5" class="empty">No orders in this slot.</td></tr>`;
+    }
+    return orders
+      .map(
+        (order) => `
+          <tr data-id="${order.id}">
+            <td class="token">#${order.token_number ?? "–"}</td>
+            <td>${formatItems(order.order_items)}</td>
+            <td data-placed="${order.placed_at}">${elapsedLabel(order.placed_at)}</td>
+            <td>${rupees(order.total_amount)}</td>
+            <td><button class="action" data-id="${order.id}">Mark completed</button></td>
+          </tr>`
+      )
+      .join("");
+  }
+
+  function renderPending() {
+    const buckets = { now: [], lunch: [] };
+    for (const order of pendingData) {
+      buckets[slotKey(order.notes)].push(order);
+    }
+    document.querySelectorAll(".subtab-btn").forEach((btn) => {
+      btn.querySelector(".count").textContent = buckets[btn.dataset.subtab].length;
+    });
+
+    const container = document.getElementById("pending-sections");
+    if (!pendingData.length) {
+      container.innerHTML = `<div class="panel"><div class="empty">No pending orders.</div></div>`;
+      return;
+    }
+
+    const orders = [...buckets[pendingSubtab]].sort((a, b) => new Date(a.placed_at) - new Date(b.placed_at));
+    container.innerHTML = `
+      <div class="pending-grid">
+        <div class="panel">
+          <div class="table-scroll">
+            <table class="orders-table">
+              <thead>
+                <tr>
+                  <th>Token</th>
+                  <th>Items (qty)</th>
+                  <th>Placed</th>
+                  <th>Total</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>${pendingOrdersTableHTML(orders)}</tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Items needed</h2>
+          ${itemSummaryTableHTML(computeItemTotals(orders))}
+        </div>
+      </div>`;
+  }
+
+  async function refreshPending() {
+    const { data, error } = await supabase
+      .from("orders")
+      .select("id, token_number, total_amount, status, placed_at, notes, order_items(item_name, quantity)")
+      .in("status", ["paid", "ready"])
+      .order("token_number", { ascending: true });
+    if (error) {
+      console.error("refreshPending failed", error);
+      return;
+    }
+    pendingData = data;
+    renderPending();
+  }
+
+  document.querySelectorAll(".subtab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".subtab-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      pendingSubtab = btn.dataset.subtab;
+      renderPending();
+    });
+  });
+
+  document.getElementById("pending-sections").addEventListener("click", async (event) => {
     const btn = event.target.closest("button.action");
     if (!btn) return;
     btn.disabled = true;
-    const orderId = btn.dataset.id;
-    if (btn.dataset.action === "ready") {
-      await markReady(orderId);
-    } else {
-      await markCompleted(orderId);
-    }
+    await markCompleted(btn.dataset.id);
     // Realtime subscription below re-renders on the resulting UPDATE event.
   });
 
+  function sortRows(rows, key, dir) {
+    return [...rows].sort((a, b) => {
+      let av = a[key];
+      let bv = b[key];
+      if (key === "total_amount" || key === "token_number") {
+        av = Number(av ?? 0);
+        bv = Number(bv ?? 0);
+      }
+      if (av == null) av = "";
+      if (bv == null) bv = "";
+      if (av < bv) return dir === "asc" ? -1 : 1;
+      if (av > bv) return dir === "asc" ? 1 : -1;
+      return 0;
+    });
+  }
+
+  function updateSortArrows(tableId, sortState) {
+    document.querySelectorAll(`#${tableId} th.sortable`).forEach((th) => {
+      const arrow = th.querySelector(".sort-arrow");
+      if (th.dataset.key === sortState.key) {
+        arrow.textContent = sortState.dir === "asc" ? "▲" : "▼";
+      } else {
+        arrow.textContent = "";
+      }
+    });
+  }
+
+  // ---------- Completed orders ----------
+  let completedData = [];
+  let completedSort = { key: "completed_at", dir: "desc" };
+  let completedSlotFilter = "all";
+
+  function renderCompleted() {
+    const filtered =
+      completedSlotFilter === "all" ? completedData : completedData.filter((o) => slotKey(o.notes) === completedSlotFilter);
+    const rows = sortRows(filtered, completedSort.key, completedSort.dir);
+    const el = document.getElementById("completed-table-body");
+    if (!rows.length) {
+      el.innerHTML = `<tr><td colspan="5" class="empty">No completed orders yet today.</td></tr>`;
+      return;
+    }
+    el.innerHTML = rows
+      .map((order) => {
+        const completedTime = order.completed_at
+          ? new Date(order.completed_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          : "—";
+        return `
+          <tr data-id="${order.id}">
+            <td class="token">#${order.token_number ?? "–"}</td>
+            <td>${formatItems(order.order_items)}</td>
+            <td>${parseSlot(order.notes)}</td>
+            <td>${rupees(order.total_amount)}</td>
+            <td>${completedTime}</td>
+          </tr>`;
+      })
+      .join("");
+  }
+
+  async function refreshCompleted() {
+    const { data, error } = await supabase
+      .from("orders")
+      .select("id, token_number, total_amount, completed_at, notes, order_items(item_name, quantity)")
+      .eq("status", "completed")
+      .gte("placed_at", todayStartISO())
+      .order("completed_at", { ascending: false });
+    if (error) {
+      console.error("refreshCompleted failed", error);
+      return;
+    }
+    completedData = data;
+    renderCompleted();
+  }
+
+  document.getElementById("completed-slot-select").addEventListener("change", (event) => {
+    completedSlotFilter = event.target.value;
+    renderCompleted();
+  });
+
+  document.querySelectorAll("#tab-completed th.sortable").forEach((th) => {
+    th.addEventListener("click", () => {
+      const key = th.dataset.key;
+      completedSort = completedSort.key === key ? { key, dir: completedSort.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" };
+      updateSortArrows("tab-completed", completedSort);
+      renderCompleted();
+    });
+  });
+  updateSortArrows("tab-completed", completedSort);
+
+  // ---------- Refresh loop ----------
+  async function refreshAll() {
+    await Promise.all([refreshStats(), refreshPending(), refreshCompleted(), refreshTopItems()]);
+  }
+
   setInterval(() => {
-    document.querySelectorAll(".elapsed[data-placed]").forEach((el) => {
+    document.querySelectorAll("[data-placed]").forEach((el) => {
       el.textContent = elapsedLabel(el.dataset.placed);
     });
   }, 30000);

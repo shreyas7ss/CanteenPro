@@ -42,3 +42,12 @@
 2026-07-19T07:14:11Z INF precheck complete hard_fail=false run_id=1dcae5ac-3e82-483c-98b7-85a17775e866 suggested_protocol=quic
 2026-07-19T07:14:12Z INF Registered tunnel connection connIndex=0 connection=73c98f3f-a59b-496f-b11d-f8bcddfa1079 event=0 ip=198.41.200.43 location=bom09 protocol=quic
 2026-07-19T08:09:17Z ERR Failed to refresh DNS local resolver error="lookup region1.v2.argotunnel.com: i/o timeout"
+2026-07-19T09:06:54Z INF Initiating graceful shutdown due to signal terminated ...
+2026-07-19T09:06:54Z ERR failed to run the datagram handler error="context canceled" connIndex=0 event=0 ip=198.41.200.43
+2026-07-19T09:06:54Z ERR failed to serve tunnel connection error="accept stream listener encountered a failure while serving" connIndex=0 event=0 ip=198.41.200.43
+2026-07-19T09:06:54Z ERR Serve tunnel error error="accept stream listener encountered a failure while serving" connIndex=0 event=0 ip=198.41.200.43
+2026-07-19T09:06:54Z INF Retrying connection in up to 1s connIndex=0 event=0 ip=198.41.200.43
+2026-07-19T09:06:54Z ERR Connection terminated connIndex=0
+2026-07-19T09:06:54Z ERR no more connections active and exiting
+2026-07-19T09:06:54Z INF Tunnel server stopped
+2026-07-19T09:06:54Z INF Metrics server stopped

@@ -36,8 +36,10 @@ async def paid(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
 
     await query.answer()
-    await query.edit_message_caption(caption=f"Paid ✅ Your token is #{token}", reply_markup=None)
-    await query.message.reply_text(f"Paid ✅ Your token is #{token}\nWe'll notify you when it's ready.")
+    await query.edit_message_reply_markup(reply_markup=None)
+    await query.message.reply_text(
+        f"🍽️ Order Placed Successfully!\n\n🎟️ Token No: #{token}\n\nThank you for ordering!"
+    )
 
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
