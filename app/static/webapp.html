@@ -517,6 +517,20 @@
   }
 
   // --- Load menu ---
+  // Drops any cart lines whose item went unavailable since it was added.
+  // Returns whether the cart actually changed.
+  function pruneUnavailableCartItems() {
+    const availableIds = new Set(menu.map((m) => m.id));
+    let changed = false;
+    for (const id of Object.keys(cart)) {
+      if (!availableIds.has(id)) {
+        delete cart[id];
+        changed = true;
+      }
+    }
+    return changed;
+  }
+
   async function loadMenu() {
     const resp = await fetch(
       `${SUPABASE_URL}/rest/v1/menu_items?select=id,name,price,category&is_available=eq.true&order=category,name`,
@@ -524,11 +538,23 @@
     );
     menu = await resp.json();
     menu = menu.map((m) => ({ ...m, price: Number(m.price) }));
+
+    const cartChanged = pruneUnavailableCartItems();
     renderHome();
+    if (cartChanged) {
+      updateChrome();
+      if (screen === "review") {
+        if (cartQuantityTotal() === 0) showScreen("home");
+        else renderReview();
+      }
+    }
   }
 
   loadMenu();
   updateChrome();
+  // Staff can toggle item availability live from the dashboard; poll so an
+  // already-open mini app picks it up without needing to be reopened.
+  setInterval(loadMenu, 5000);
 </script>
 </body>
 </html>

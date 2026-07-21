@@ -312,12 +312,6 @@
   @media (max-width: 760px) {
     .pending-grid { grid-template-columns: 1fr; }
   }
-  table.summary-table tr.total-row td {
-    border-top: 1px solid var(--gridline);
-    border-bottom: none;
-    font-weight: 600;
-  }
-
   /* Orders table */
   .table-scroll { overflow-x: auto; }
   table.orders-table {
@@ -347,6 +341,58 @@
   table.orders-table tbody tr:last-child td { border-bottom: none; }
   table.orders-table td.token { font-weight: 600; }
   .sort-arrow { font-size: 10px; margin-left: 4px; opacity: 0.6; }
+
+  /* Availability toggle (Menu tab) */
+  .switch { position: relative; display: inline-block; width: 38px; height: 22px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch .slider {
+    position: absolute;
+    inset: 0;
+    background: var(--gridline);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+  .switch .slider::before {
+    content: "";
+    position: absolute;
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    top: 2px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.15s ease;
+  }
+  .switch input:checked + .slider { background: var(--status-good); border-color: var(--status-good); }
+  .switch input:checked + .slider::before { transform: translateX(16px); }
+  .switch input:disabled + .slider { opacity: 0.6; cursor: default; }
+  .availability-label { font-size: 12px; color: var(--text-secondary); }
+
+  .menu-category { margin-bottom: 16px; }
+  .menu-category:last-child { margin-bottom: 0; }
+  .menu-category-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .menu-category-header h2 {
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .menu-category-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
 </style>
 </head>
 <body>
@@ -373,6 +419,7 @@
     <button class="tab-btn active" data-tab="summary" type="button">Summary</button>
     <button class="tab-btn" data-tab="pending" type="button">Pending orders</button>
     <button class="tab-btn" data-tab="completed" type="button">Completed orders</button>
+    <button class="tab-btn" data-tab="menu" type="button">Menu</button>
   </div>
 
   <!-- Summary -->
@@ -444,6 +491,13 @@
           </tbody>
         </table>
       </div>
+    </div>
+  </div>
+
+  <!-- Menu -->
+  <div class="tab-panel" id="tab-menu">
+    <div id="menu-categories">
+      <div class="panel"><div class="empty">Loading…</div></div>
     </div>
   </div>
 
@@ -604,13 +658,11 @@
 
   function itemSummaryTableHTML(rows) {
     if (!rows.length) return `<div class="empty">Nothing needed yet.</div>`;
-    const grandTotal = rows.reduce((sum, r) => sum + r.quantity, 0);
     return `
       <table class="orders-table summary-table">
         <thead><tr><th>Food item</th><th>Quantity</th></tr></thead>
         <tbody>
           ${rows.map((r) => `<tr><td>${r.item_name}</td><td>${r.quantity}</td></tr>`).join("")}
-          <tr class="total-row"><td>Grand total</td><td>${grandTotal}</td></tr>
         </tbody>
       </table>`;
   }
@@ -793,9 +845,112 @@
   });
   updateSortArrows("tab-completed", completedSort);
 
+  // ---------- Menu availability ----------
+  function groupByCategory(items) {
+    const map = new Map();
+    for (const item of items) {
+      if (!map.has(item.category)) map.set(item.category, []);
+      map.get(item.category).push(item);
+    }
+    return map;
+  }
+
+  function menuItemsTableHTML(items) {
+    return items
+      .map(
+        (item) => `
+          <tr data-id="${item.id}">
+            <td>${item.name}</td>
+            <td>${rupees(item.price)}</td>
+            <td>
+              <label class="switch">
+                <input type="checkbox" class="avail-toggle" data-id="${item.id}" ${item.is_available ? "checked" : ""}>
+                <span class="slider"></span>
+              </label>
+            </td>
+          </tr>`
+      )
+      .join("");
+  }
+
+  function renderMenu(rows) {
+    const el = document.getElementById("menu-categories");
+    if (!rows.length) {
+      el.innerHTML = `<div class="panel"><div class="empty">No menu items.</div></div>`;
+      return;
+    }
+    const byCategory = groupByCategory(rows);
+    el.innerHTML = [...byCategory.entries()]
+      .map(([category, items]) => {
+        const availableCount = items.filter((it) => it.is_available).length;
+        const allOn = availableCount === items.length;
+        return `
+          <div class="panel menu-category">
+            <div class="menu-category-header">
+              <h2>${category} <span class="availability-label">${availableCount}/${items.length} available</span></h2>
+              <label class="menu-category-toggle">
+                Category available
+                <span class="switch">
+                  <input type="checkbox" class="category-toggle" data-category="${category}" ${allOn ? "checked" : ""}>
+                  <span class="slider"></span>
+                </span>
+              </label>
+            </div>
+            <div class="table-scroll">
+              <table class="orders-table">
+                <thead><tr><th>Item</th><th>Price</th><th>Available</th></tr></thead>
+                <tbody>${menuItemsTableHTML(items)}</tbody>
+              </table>
+            </div>
+          </div>`;
+      })
+      .join("");
+  }
+
+  async function refreshMenu() {
+    const { data, error } = await supabase
+      .from("menu_items")
+      .select("id, name, price, category, is_available")
+      .order("category", { ascending: true })
+      .order("name", { ascending: true });
+    if (error) {
+      console.error("refreshMenu failed", error);
+      return;
+    }
+    renderMenu(data);
+  }
+
+  document.getElementById("menu-categories").addEventListener("change", async (event) => {
+    const itemCb = event.target.closest(".avail-toggle");
+    if (itemCb) {
+      itemCb.disabled = true;
+      const { error } = await supabase.from("menu_items").update({ is_available: itemCb.checked }).eq("id", itemCb.dataset.id);
+      if (error) {
+        console.error("menu availability update failed", error);
+        itemCb.checked = !itemCb.checked;
+      }
+      itemCb.disabled = false;
+      return;
+    }
+
+    const catCb = event.target.closest(".category-toggle");
+    if (catCb) {
+      catCb.disabled = true;
+      const { error } = await supabase
+        .from("menu_items")
+        .update({ is_available: catCb.checked })
+        .eq("category", catCb.dataset.category);
+      if (error) {
+        console.error("category availability update failed", error);
+        catCb.checked = !catCb.checked;
+      }
+      catCb.disabled = false;
+    }
+  });
+
   // ---------- Refresh loop ----------
   async function refreshAll() {
-    await Promise.all([refreshStats(), refreshPending(), refreshCompleted(), refreshTopItems()]);
+    await Promise.all([refreshStats(), refreshPending(), refreshCompleted(), refreshTopItems(), refreshMenu()]);
   }
 
   setInterval(() => {
@@ -808,6 +963,9 @@
     .channel("orders-dashboard")
     .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
       refreshAll();
+    })
+    .on("postgres_changes", { event: "*", schema: "public", table: "menu_items" }, () => {
+      refreshMenu();
     })
     .subscribe((status) => {
       setConn(status === "SUBSCRIBED");

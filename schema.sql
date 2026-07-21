@@ -100,6 +100,9 @@ alter table order_items enable row level security;
 create policy "anon can read menu_items" on menu_items
     for select using (true);
 
+create policy "anon can update menu_items" on menu_items
+    for update using (true) with check (true);
+
 create policy "anon can read orders" on orders
     for select using (true);
 
@@ -109,8 +112,10 @@ create policy "anon can update orders" on orders
 create policy "anon can read order_items" on order_items
     for select using (true);
 
--- Realtime: dashboard subscribes to changes on orders.
+-- Realtime: dashboard subscribes to changes on orders and menu_items
+-- (the latter drives the staff availability toggle showing/hiding items live).
 alter publication supabase_realtime add table orders;
+alter publication supabase_realtime add table menu_items;
 
 -- Seed menu — J.V. Enterprises, transcribed from data/JV_Enterprises_Menu.pdf
 insert into menu_items (name, price, category) values

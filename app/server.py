@@ -15,11 +15,17 @@ app = FastAPI()
 
 _WEBAPP_HTML = Path(__file__).parent / "static" / "webapp.html"
 _LOGO_PNG = Path(__file__).parent / "static" / "logo.png"
+_DASHBOARD_HTML = Path(__file__).parent.parent / "dashboard.html"
 
 
 @app.get("/app")
 async def serve_webapp():
     return FileResponse(_WEBAPP_HTML, headers={"Cache-Control": "no-store, must-revalidate"})
+
+
+@app.get("/dashboard")
+async def serve_dashboard():
+    return FileResponse(_DASHBOARD_HTML, headers={"Cache-Control": "no-store, must-revalidate"})
 
 
 @app.get("/logo.png")
