@@ -6,7 +6,6 @@
 __pycache__
 *.pyc
 instructions
-dashboard.html
 schema.sql
 *.md
 JV_Enterprises_Menu.pdf

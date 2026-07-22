@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>LineZero — Staff Dashboard</title>
+<title>J.V. ENTERPRISES — Staff Dashboard</title>
 <style>
   :root {
     color-scheme: light;
@@ -400,7 +400,7 @@
 
   <header class="top">
     <div>
-      <h1>LineZero — Staff Dashboard</h1>
+      <h1>J.V. ENTERPRISES — Staff Dashboard</h1>
       <div class="sub">Paid orders only. Unpaid orders never reach this screen.</div>
     </div>
     <div class="top-actions">
@@ -523,7 +523,7 @@
   if (!SUPABASE_URL.startsWith("http") || SUPABASE_ANON_KEY.startsWith("REPLACE")) {
     document.getElementById("config-banner").style.display = "block";
     document.getElementById("conn-label").textContent = "not configured";
-    throw new Error("LineZero dashboard: SUPABASE_URL / SUPABASE_ANON_KEY not set.");
+    throw new Error("J.V. ENTERPRISES dashboard: SUPABASE_URL / SUPABASE_ANON_KEY not set.");
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);

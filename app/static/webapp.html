@@ -146,6 +146,7 @@
     transition: transform 0.1s ease;
   }
   button.add-btn:active { transform: scale(0.9); }
+  .control-slot { flex: 0 0 auto; }
   .stepper {
     flex: 0 0 auto;
     display: flex;
@@ -401,31 +402,46 @@
       : `<div class="empty">Menu unavailable right now.</div>`;
   }
 
+  function itemControlHTML(item) {
+    const qty = cart[item.id] || 0;
+    return qty
+      ? `<div class="stepper">
+           <button class="step-btn" data-action="dec" data-id="${item.id}">−</button>
+           <span class="qty">${qty}</span>
+           <button class="step-btn" data-action="inc" data-id="${item.id}">+</button>
+         </div>`
+      : `<button class="add-btn" data-action="inc" data-id="${item.id}">+</button>`;
+  }
+
   function renderItemList() {
     const el = document.getElementById("item-list");
     const categories = [...new Set(menu.map((m) => m.category))];
     const items = menu.filter((m) => m.category === activeCategory);
     el.innerHTML = items
-      .map((item) => {
-        const qty = cart[item.id] || 0;
-        const control = qty
-          ? `<div class="stepper">
-               <button class="step-btn" data-action="dec" data-id="${item.id}">−</button>
-               <span class="qty">${qty}</span>
-               <button class="step-btn" data-action="inc" data-id="${item.id}">+</button>
-             </div>`
-          : `<button class="add-btn" data-action="inc" data-id="${item.id}">+</button>`;
-        return `
-          <div class="item-row">
+      .map(
+        (item) => `
+          <div class="item-row" data-id="${item.id}">
             <div class="thumb" style="background:${categoryColor(categories, item.category)}26">${CATEGORY_EMOJI[item.category] || DEFAULT_EMOJI}</div>
             <div class="info">
               <div class="name">${item.name}</div>
               <div class="price">${rupees(item.price)}</div>
             </div>
-            ${control}
-          </div>`;
-      })
+            <span class="control-slot">${itemControlHTML(item)}</span>
+          </div>`
+      )
       .join("");
+  }
+
+  // Updates just the tapped row's stepper/add-btn in place, instead of
+  // rebuilding every row in the category. A full rebuild on every tap risks
+  // replacing a button mid-touch on slower devices — the click can land on
+  // nothing, or on a neighboring row's freshly-recreated button, making taps
+  // appear dropped or "one behind."
+  function updateItemControl(id) {
+    const item = menu.find((m) => m.id === id);
+    if (!item) return;
+    const slot = document.querySelector(`#item-list .item-row[data-id="${id}"] .control-slot`);
+    if (slot) slot.innerHTML = itemControlHTML(item);
   }
 
   function renderCartPreview() {
@@ -469,7 +485,7 @@
     if (next <= 0) delete cart[id];
     else cart[id] = next;
     if (tg) tg.HapticFeedback.selectionChanged();
-    renderItemList();
+    updateItemControl(id);
     renderCartPreview();
     updateChrome();
   });
@@ -531,22 +547,45 @@
     return changed;
   }
 
-  async function loadMenu() {
-    const resp = await fetch(
-      `${SUPABASE_URL}/rest/v1/menu_items?select=id,name,price,category&is_available=eq.true&order=category,name`,
-      { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }
-    );
-    menu = await resp.json();
-    menu = menu.map((m) => ({ ...m, price: Number(m.price) }));
+  // Same ids in the same order (the query's order=category,name is stable) means
+  // nothing actually changed, so the caller can skip re-rendering.
+  function sameMenuIds(a, b) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (a[i].id !== b[i].id) return false;
+    }
+    return true;
+  }
 
-    const cartChanged = pruneUnavailableCartItems();
-    renderHome();
-    if (cartChanged) {
-      updateChrome();
-      if (screen === "review") {
-        if (cartQuantityTotal() === 0) showScreen("home");
-        else renderReview();
+  let menuLoadInFlight = false;
+
+  async function loadMenu() {
+    // On a slow connection a poll can still be in flight when the next one
+    // fires; skip rather than stack requests and rebuild the DOM out of order.
+    if (menuLoadInFlight) return;
+    menuLoadInFlight = true;
+    try {
+      const resp = await fetch(
+        `${SUPABASE_URL}/rest/v1/menu_items?select=id,name,price,category&is_available=eq.true&order=category,name`,
+        { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }
+      );
+      const freshMenu = (await resp.json()).map((m) => ({ ...m, price: Number(m.price) }));
+      const menuChanged = !sameMenuIds(menu, freshMenu);
+      menu = freshMenu;
+
+      const cartChanged = pruneUnavailableCartItems();
+      // Rebuilding #item-list's DOM while the student is mid-tap can eat the
+      // tap, so only do it when the available items (or the cart) actually changed.
+      if (menuChanged || cartChanged) renderHome();
+      if (cartChanged) {
+        updateChrome();
+        if (screen === "review") {
+          if (cartQuantityTotal() === 0) showScreen("home");
+          else renderReview();
+        }
       }
+    } finally {
+      menuLoadInFlight = false;
     }
   }
 
