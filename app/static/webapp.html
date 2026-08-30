@@ -312,6 +312,7 @@
 
   // --- State ---
   let menu = [];          // [{id, name, price, category}]
+  let menuEverLoaded = false;
   const cart = {};        // menu_item_id -> quantity
   let activeCategory = null;
   let pickupSlot = null;  // "Right now" | "10:30 AM (today)"
@@ -570,8 +571,13 @@
         { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }
       );
       const freshMenu = (await resp.json()).map((m) => ({ ...m, price: Number(m.price) }));
-      const menuChanged = !sameMenuIds(menu, freshMenu);
+      // Always render the very first load, even if the fetch came back empty —
+      // otherwise an empty menu (e.g. everything toggled unavailable) looks
+      // identical to the initial empty state and the "Loading menu…" ↔
+      // "Menu unavailable" placeholder never gets a chance to update.
+      const menuChanged = !menuEverLoaded || !sameMenuIds(menu, freshMenu);
       menu = freshMenu;
+      menuEverLoaded = true;
 
       const cartChanged = pruneUnavailableCartItems();
       // Rebuilding #item-list's DOM while the student is mid-tap can eat the

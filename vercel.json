@@ -1,0 +1,18 @@
+{
+  "buildCommand": "pip install -r requirements.txt",
+  "outputDirectory": ".",
+  "framework": "python",
+  "python": {
+    "version": "3.11"
+  },
+  "env": {
+    "TELEGRAM_BOT_TOKEN": "@TELEGRAM_BOT_TOKEN",
+    "SUPABASE_URL": "@SUPABASE_URL",
+    "SUPABASE_SERVICE_ROLE_KEY": "@SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_ANON_KEY": "@SUPABASE_ANON_KEY",
+    "UPI_VPA": "@UPI_VPA",
+    "UPI_PAYEE_NAME": "@UPI_PAYEE_NAME",
+    "UPI_REDIRECT_BASE_URL": "@UPI_REDIRECT_BASE_URL",
+    "WASENDER_API_KEY": "@WASENDER_API_KEY"
+  }
+}

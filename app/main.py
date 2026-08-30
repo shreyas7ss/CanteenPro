@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 
 import uvicorn
 
@@ -25,4 +26,11 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    # Check if running on Vercel (use webhooks) or locally (use polling)
+    if os.environ.get("VERCEL"):
+        # On Vercel, just run the FastAPI app (webhook mode)
+        # Bot will be initialized via startup event
+        uvicorn.run(app, host="0.0.0.0", port=PORT)
+    else:
+        # Locally, run both bot and server
+        asyncio.run(main())

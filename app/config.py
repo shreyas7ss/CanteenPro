@@ -23,4 +23,9 @@ UPI_VPA = _require("UPI_VPA")
 UPI_PAYEE_NAME = _require("UPI_PAYEE_NAME")
 UPI_REDIRECT_BASE_URL = _require("UPI_REDIRECT_BASE_URL").rstrip("/")
 
+# Optional: WhatsApp integration (WasenderAPI). Left unset while we're still
+# testing it out alongside the existing Telegram bot, so a missing key here
+# must never break app startup.
+WASENDER_API_KEY = os.environ.get("WASENDER_API_KEY")
+
 PORT = int(os.environ.get("PORT", "8080"))
