@@ -18,6 +18,7 @@ _bot_app: Application = None
 
 _WEBAPP_HTML = Path(__file__).parent / "static" / "webapp.html"
 _LOGO_PNG = Path(__file__).parent / "static" / "logo.png"
+_BRAND_LOGO_JPG = Path(__file__).parent.parent / "data" / "MvjLogo.jpg"
 _DASHBOARD_HTML = Path(__file__).parent.parent / "dashboard.html"
 
 
@@ -34,6 +35,11 @@ async def serve_dashboard():
 @app.get("/logo.png")
 async def serve_logo():
     return FileResponse(_LOGO_PNG)
+
+
+@app.get("/brand-logo.jpg")
+async def serve_brand_logo():
+    return FileResponse(_BRAND_LOGO_JPG)
 
 
 @app.get("/pay/{txn_id}")

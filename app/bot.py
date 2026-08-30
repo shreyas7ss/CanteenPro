@@ -13,11 +13,11 @@ from app.config import TELEGRAM_BOT_TOKEN, UPI_REDIRECT_BASE_URL
 # the content did.
 _WEBAPP_VERSION = int((Path(__file__).parent / "static" / "webapp.html").stat().st_mtime)
 WEBAPP_URL = f"{UPI_REDIRECT_BASE_URL}/app?v={_WEBAPP_VERSION}"
-_START_PNG = Path(__file__).parent / "static" / "start.png"
+_START_PAMPHLET = Path(__file__).parent.parent / "data" / "image.png"
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    with open(_START_PNG, "rb") as photo:
+    with open(_START_PAMPHLET, "rb") as photo:
         await update.message.reply_photo(photo)
 
     keyboard = InlineKeyboardMarkup(
