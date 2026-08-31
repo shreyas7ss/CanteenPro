@@ -12,7 +12,11 @@ from app.config import TELEGRAM_BOT_TOKEN, UPI_REDIRECT_BASE_URL
 # change, since the URL itself changes rather than relying on Telegram to notice
 # the content did.
 _WEBAPP_VERSION = int((Path(__file__).parent / "static" / "webapp.html").stat().st_mtime)
-WEBAPP_URL = f"{UPI_REDIRECT_BASE_URL}/app?v={_WEBAPP_VERSION}"
+
+def get_webapp_url():
+    """Dynamically get the webapp URL to always use the current UPI_REDIRECT_BASE_URL"""
+    return f"{UPI_REDIRECT_BASE_URL}/app?v={_WEBAPP_VERSION}"
+
 _START_PAMPHLET = Path(__file__).parent.parent / "data" / "image.png"
 
 
@@ -21,7 +25,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await update.message.reply_photo(photo)
 
     keyboard = InlineKeyboardMarkup(
-        [[InlineKeyboardButton("\U0001f37d Open Menu", web_app=WebAppInfo(url=WEBAPP_URL))]]
+        [[InlineKeyboardButton("\U0001f37d Open Menu", web_app=WebAppInfo(url=get_webapp_url()))]]
     )
     await update.message.reply_text(
         "Welcome to LineZero! Tap below to browse the menu and order.",
@@ -61,7 +65,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def set_menu_button(application: Application) -> None:
     await application.bot.set_chat_menu_button(
-        menu_button=MenuButtonWebApp(text="Order", web_app=WebAppInfo(url=WEBAPP_URL))
+        menu_button=MenuButtonWebApp(text="Order", web_app=WebAppInfo(url=get_webapp_url()))
     )
 
 
