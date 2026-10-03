@@ -1,0 +1,3 @@
+[submodule "wuzapi-local"]
+	path = wuzapi-local
+	url = https://github.com/asternic/wuzapi.git
