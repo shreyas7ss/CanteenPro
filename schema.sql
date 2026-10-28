@@ -15,8 +15,7 @@ create table menu_items (
 create table orders (
     id uuid primary key default gen_random_uuid(),
     token_number int,
-    telegram_user_id bigint not null,
-    telegram_username text,
+    customer_phone text,
     student_name text,
     roll_number text,
     total_amount numeric(10, 2) not null,
@@ -42,6 +41,7 @@ create table order_items (
 );
 
 create index orders_status_idx on orders (status);
+create index orders_customer_phone_idx on orders (customer_phone);
 create index order_items_order_id_idx on order_items (order_id);
 
 -- Assigns the next per-day token number when a student confirms payment.

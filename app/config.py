@@ -14,8 +14,6 @@ def _require(name: str) -> str:
     return value
 
 
-TELEGRAM_BOT_TOKEN = _require("TELEGRAM_BOT_TOKEN")
-
 SUPABASE_URL = _require("SUPABASE_URL").rstrip("/")
 SUPABASE_SERVICE_ROLE_KEY = _require("SUPABASE_SERVICE_ROLE_KEY")
 
@@ -23,9 +21,13 @@ UPI_VPA = _require("UPI_VPA")
 UPI_PAYEE_NAME = _require("UPI_PAYEE_NAME")
 UPI_REDIRECT_BASE_URL = _require("UPI_REDIRECT_BASE_URL").rstrip("/")
 
-# Optional: WhatsApp integration (WasenderAPI). Left unset while we're still
-# testing it out alongside the existing Telegram bot, so a missing key here
-# must never break app startup.
-WASENDER_API_KEY = os.environ.get("WASENDER_API_KEY")
+# Configure this in the hosting provider's secret store, never in source control.
+GETGABS_API_KEY = os.environ.get("GETGABS_API_KEY")
+GETGABS_WEBHOOK_TOKEN = os.environ.get("GETGABS_WEBHOOK_TOKEN")
 
 PORT = int(os.environ.get("PORT", "8080"))
+CORS_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("CORS_ORIGINS", "http://localhost:3000").split(",")
+    if origin.strip()
+]

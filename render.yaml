@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: canteenpro-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: UPI_VPA
+        sync: false
+      - key: UPI_PAYEE_NAME
+        sync: false
+      - key: UPI_REDIRECT_BASE_URL
+        sync: false
+      - key: GETGABS_API_KEY
+        sync: false
+      - key: GETGABS_WEBHOOK_TOKEN
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: PORT
+        sync: false
