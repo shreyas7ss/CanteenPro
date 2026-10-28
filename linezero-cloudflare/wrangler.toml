@@ -1,0 +1,3 @@
+name = "linezero-ordering-site"
+pages_build_output_dir = "./static"
+compatibility_date = "2026-10-03"

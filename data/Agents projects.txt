@@ -1,0 +1,126 @@
+﻿Agentic AI Course Project
+Project 1: Human Role-Model Inspired Personalized Mental Health Counselling Agent
+Problem Statement
+Design and implement an Agentic AI-based Personalized Mental Health Counselling System that leverages the guidance styles of trusted human role models such as mentors, counsellors, teachers, and peer supporters to deliver personalized, empathetic, and context-aware mental health assistance. The system should understand users through natural-language conversations, identify their emotional state and counselling needs, retrieve relevant psychological knowledge using Retrieval-Augmented Generation (RAG), and generate supportive responses that align with appropriate human role models. The system should provide explainable, trustworthy, and adaptive counselling while ensuring user privacy, emotional safety, and personalized interaction.
+Objective 1 – Human Role-Model Guided Personalized Counselling
+* Develop an agent that understands users' emotional concerns through natural-language conversations.
+* Model the counselling approaches of trusted human role models, including mentors, counsellors, teachers, and peers, to generate personalized guidance.
+* Integrate emotion recognition, user profiling, and RAG-based psychological knowledge retrieval to provide context-aware counselling.
+Objective 2 – Trustworthy and Adaptive Mental Health Support
+* Develop an LLM-based reasoning mechanism that generates empathetic, explainable, and personalized counselling responses.
+* Adapt counselling recommendations according to the user's emotional state, interaction history, and preferred role model.
+* Ensure privacy, response reliability, emotional safety, and user trust throughout the counselling process.
+
+
+Project 2: Culturally Grounded Mental Health Counselling Agent
+Problem Statement
+Design and implement an Agentic AI-based Culturally Grounded Mental Health Counselling System that incorporates users' cultural background, religious beliefs, traditions, and personal values into the counselling process to provide respectful, relevant, and personalized mental health guidance. The system should understand user preferences through natural-language interactions, retrieve culturally relevant psychological resources using Retrieval-Augmented Generation (RAG), and employ LLM-based reasoning to generate culturally appropriate recommendations while maintaining explainability, inclusiveness, privacy, and ethical AI practices.
+Objective 1 – Culture-Aware Mental Health Understanding
+* Develop an agent that captures users' cultural background, religious beliefs, traditions, and personal values during counselling interactions.
+* Integrate RAG-based retrieval to identify culturally relevant mental health knowledge and support resources.
+* Generate counselling responses that respect the user's cultural identity and personal belief system.
+Objective 2 – Explainable and Inclusive Counselling Support
+* Develop an LLM-based reasoning framework to produce context-aware, culturally appropriate, and explainable mental health guidance.
+* Personalize counselling recommendations according to users' beliefs, values, and emotional context.
+* Maintain fairness, inclusiveness, privacy, reliability, and ethical decision-making throughout the counselling process.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Project 3:  Multilingual Agentic AI-based legal support system 
+Problem Statement
+Design and implement a Multilingual Agentic AI-based Family Law Information and Decision-Support System that understands natural-language user queries through both spoken and typed interactions and provides accessible, context-aware, and explainable family-law information. The system should initially support English, Hindi, and Kannada, with the capability to extend to other Indian languages. It should integrate language identification, multilingual Automatic Speech Recognition (ASR), legal-document retrieval using Retrieval-Augmented Generation (RAG), LLM-based legal reasoning, and multilingual Text-to-Speech (TTS) to understand user queries, retrieve relevant family-law information, generate reliable and context-aware responses, and deliver them through text or voice. The system should provide an accessible and secure conversational interface while maintaining retrieval quality, explainability, and multilingual usability.
+Objective 1 – Multilingual Voice-Based Family Law Information and Retrieval
+* Develop an agent that understands **spoken and typed natural-language queries** related to family law.
+* Integrate **language identification, multilingual ASR, legal-document retrieval, and multilingual TTS**, initially supporting English, Hindi, and Kannada.
+* Retrieve relevant family-law provisions and documents using a **RAG-based retrieval mechanism** and provide the information through text or voice.
+
+
+Objective 2 – Context-Aware and Explainable Family Law Decision Support
+* Develop an LLM-based reasoning mechanism to analyze retrieved legal information and generate **context-aware, understandable, and explainable responses**.
+* Provide users with relevant family-law information and decision-support based on their queries while maintaining **retrieval accuracy, response reliability, security, and accessibility**.
+* Enable the system to serve as an accessible conversational platform for family-law information across multiple Indian languages.
+Project 4:  Similarity-Based Confidence and Uncertainty Estimation for LLM-Based Legal Assistance 
+Problem Statement
+Design and implement a Similarity-Based Uncertainty Quantification framework for LLM-based Legal Assistance that estimates the reliability of generated legal responses by analyzing the consistency and similarity among multiple responses generated for the same legal query. The system should generate multiple candidate responses, compute pairwise similarities using lexical and semantic similarity measures, and aggregate these similarities to estimate the confidence and uncertainty associated with each response. The framework should evaluate whether response consistency can serve as an effective indicator of correctness in legal question answering and identify uncertain, inconsistent, or potentially unreliable legal responses to improve the transparency and reliability of LLM-based legal assistance.
+Objective 1 – Similarity-Based Uncertainty Estimation
+* Develop a mechanism to generate multiple responses for the same legal query using an LLM.
+* Compute pairwise similarity among generated responses using suitable lexical and semantic similarity measures.
+* Aggregate the similarity information to estimate the confidence and uncertainty of individual legal responses.
+Objective 2 – Evaluation of Uncertainty in Legal Question Answering
+* Evaluate the effectiveness of similarity-based uncertainty estimates in identifying correct, incorrect, inconsistent, and potentially unreliable legal responses.
+* Compare different similarity measures and aggregation strategies using appropriate uncertainty and calibration metrics, such as ACE and AUROC.
+* Analyze the relationship between response consistency, legal correctness, and uncertainty to assess the suitability of similarity-based UQ for legal assistance.
+
+
+
+
+
+
+
+
+
+
+Project 7: End-to-End Interview Agent
+Capstone Project: End-to-End AI Hiring Pipeline (Revised Stage Order)
+Updated per your guide's feedback — identity verification now happens before the interview (gates entry into the interview itself, not just a parallel check), and the interview stage now specifies broad, reasoning-driven spoken questioning, not just adaptive follow-ups.
+Problem
+ Build a single pipeline: JD → resume shortlist → auto-scheduled interview slot → identity verification (gate) → agent conducts a spoken interview, reasoning over each answer to decide what to ask next → final shortlist based on interview responses.
+Dataset — unchanged from before (JD + 10 competencies, Kaggle Resume Dataset filtered to role, LFW or similar for face-verification testing, mock calendar JSON).
+Requirements
+Stage 1 — Resume intake & shortlist (unchanged)
+* Parse resumes → structured fields, score against JD competencies with evidence-based justification, output ranked shortlist.
+Stage 2 — Auto-scheduling (unchanged)
+* Assign shortlisted candidates to available slots, no double-booking, generate confirmation artifact.
+Stage 3 — Identity verification (moved up — now a gate before the interview)
+* Match candidate's live face (webcam frame / test image) against the resume-submitted photo before the interview session is allowed to start
+* Checks: face detected, single face, match confidence above threshold, no swap mid-session
+* Pass → proceed to interview. Fail → route to human review queue, interview does not start automatically. This is a hard gate, not a soft flag anymore, since it now runs first.
+* Log every check with timestamp and confidence score to identity_log_<id>.json
+Stage 4 — Agent-conducted interview (spoken, reasoning-driven, broad questioning)
+ This is the stage your guide wants deepened. The agent must not just pick from a fixed follow-up tree — it should reason over the semantic content of what the candidate says and generate a genuinely new, broader question from that reasoning, the way a human interviewer branches into an unplanned topic because something interesting came up.
+* Voice interface: candidate's spoken answer → STT (e.g., Whisper) → text → agent reasons → agent's next question → TTS → spoken aloud. Text-based fallback is acceptable if voice hardware isn't available, but the reasoning/question-generation logic must be voice-ready (short, natural, speakable questions — not dense written prose).
+* Reasoning must produce broad follow-ups, not just narrow clarifications. Example: candidate mentions "I also mentored two juniors" while answering a technical question — the agent should recognize this opens a new, unplanned competency (leadership/mentoring) worth exploring, not just stay narrowly on the technical thread.
+* The agent decides, per turn: narrow follow-up (clarify what was just said) vs. broad pivot (open a new but relevant angle the candidate's answer surfaced) vs. move to next planned competency vs. conclude.
+* Every question the agent asks out loud must be traceable to a specific reasoning trigger — log {trigger_phrase_from_candidate, reasoning, decision, question_asked} per turn.
+Stage 5 — Final recommendation (unchanged logic, now downstream of a verified identity by construction)
+* Combine resume score + interview response score; identity verification is no longer a separate late-stage flag since a failed check now prevents the interview from happening at all.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Project 8: human-AI Co- Learning agent
+
+
+Problem Statement
+
+
+Traditional educational management platforms effectively store student submission records, assignment marks, and project grades, but they lack automated analytical tools to convert raw assessment data into actionable pedagogical insights. Educators currently spend substantial time manually grading submissions and attempting to gauge topic-specific student comprehension, often missing early indicators of concept misunderstanding or incomplete submissions. Concurrently, students frequently lack a consolidated interface to track real-time assessment status, grades, and personalized diagnostic feedback. There is a need for an intelligent dual-interface agent that automates assessment evaluation, calculates subject-level comprehension metrics for faculty, and provides students with clear visibility into their submission workflows and performance feedback.
+
+
+Objectives
+
+
+*  Develop an AI-Driven Automated Evaluation Engine: Design and integrate an evaluation agent within the faculty interface that analyzes individual student submissions to quantify topic mastery and compute a percentage-based measure of concept understanding per subject.
+*  Build a Dual-Role Portal Architecture: Implement two secure, role-specific interfaces—a Student Phase for managing submission uploads, viewing marks, and receiving feedback; and a Faculty Phase for monitoring submission completeness, tracking missed assessments, and viewing aggregated quality metrics.
+*  Establish Real-Time Performance Analytics and Diagnostic Feedback: Create a reporting module that alerts faculty to overdue or missing assessments, highlights learning gaps across individual student profiles, and delivers targeted automated feedback to students to support continuous academic improvement.
