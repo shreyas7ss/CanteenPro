@@ -567,8 +567,21 @@
   });
 
   // ---------- Actions ----------
+  async function markPaid(orderId) {
+    const { data, error } = await supabase.rpc("assign_next_token", { p_order_id: orderId });
+    if (error) throw error;
+    if (data == null) throw new Error("Payment was confirmed, but no order token was returned.");
+  }
+
   async function markCompleted(orderId) {
-    await supabase.from("orders").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", orderId);
+    const { data, error } = await supabase
+      .from("orders")
+      .update({ status: "completed", completed_at: new Date().toISOString() })
+      .eq("id", orderId)
+      .select("id")
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error("Order was not updated; it may already be completed.");
   }
 
   // ---------- Top items ----------
@@ -669,7 +682,7 @@
 
   function pendingOrdersTableHTML(orders) {
     if (!orders.length) {
-      return `<tr><td colspan="5" class="empty">No orders in this slot.</td></tr>`;
+      return `<tr><td colspan="6" class="empty">No orders in this slot.</td></tr>`;
     }
     return orders
       .map(
@@ -677,9 +690,10 @@
           <tr data-id="${order.id}">
             <td class="token">#${order.token_number ?? "–"}</td>
             <td>${formatItems(order.order_items)}</td>
+            <td>${order.status === "pending_payment" ? "Awaiting payment" : order.status}</td>
             <td data-placed="${order.placed_at}">${elapsedLabel(order.placed_at)}</td>
             <td>${rupees(order.total_amount)}</td>
-            <td><button class="action" data-id="${order.id}">Mark completed</button></td>
+            <td><button class="action" data-id="${order.id}" data-action="${order.status === "pending_payment" ? "paid" : "completed"}">${order.status === "pending_payment" ? "Confirm payment" : "Mark completed"}</button></td>
           </tr>`
       )
       .join("");
@@ -710,6 +724,7 @@
                 <tr>
                   <th>Token</th>
                   <th>Items (qty)</th>
+                  <th>Status</th>
                   <th>Placed</th>
                   <th>Total</th>
                   <th></th>
@@ -721,7 +736,7 @@
         </div>
         <div class="panel">
           <h2>Items needed</h2>
-          ${itemSummaryTableHTML(computeItemTotals(orders))}
+          ${itemSummaryTableHTML(computeItemTotals(orders.filter((order) => order.status !== "pending_payment")))}
         </div>
       </div>`;
   }
@@ -730,7 +745,7 @@
     const { data, error } = await supabase
       .from("orders")
       .select("id, token_number, total_amount, status, placed_at, notes, order_items(item_name, quantity)")
-      .in("status", ["paid", "ready"])
+      .in("status", ["pending_payment", "paid", "ready"])
       .order("token_number", { ascending: true });
     if (error) {
       console.error("refreshPending failed", error);
@@ -753,8 +768,18 @@
     const btn = event.target.closest("button.action");
     if (!btn) return;
     btn.disabled = true;
-    await markCompleted(btn.dataset.id);
-    // Realtime subscription below re-renders on the resulting UPDATE event.
+    try {
+      if (btn.dataset.action === "paid") {
+        await markPaid(btn.dataset.id);
+      } else {
+        await markCompleted(btn.dataset.id);
+      }
+      await refreshAll();
+    } catch (error) {
+      console.error("order status update failed", error);
+      alert(`Could not update order: ${error.message || "Unknown error"}`);
+      btn.disabled = false;
+    }
   });
 
   function sortRows(rows, key, dir) {
