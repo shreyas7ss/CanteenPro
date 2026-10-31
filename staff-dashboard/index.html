@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>J.V. ENTERPRISES — Staff Dashboard</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-1:      #fcfcfb;
+    --page:           #f9f9f7;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --gridline:       #e1e0d9;
+    --baseline:       #c3c2b7;
+    --border:         rgba(11,11,11,0.10);
+    --series-1:       #2a78d6;
+    --status-good:    #0ca30c;
+    --status-warning: #fab219;
+    --status-serious: #ec835a;
+    --status-critical:#d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --surface-1:      #1a1a19;
+      --page:           #0d0d0d;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted:     #898781;
+      --gridline:       #2c2c2a;
+      --baseline:       #383835;
+      --border:         rgba(255,255,255,0.10);
+      --series-1:       #3987e5;
+      --status-good:    #0ca30c;
+      --status-warning: #fab219;
+      --status-serious: #ec835a;
+      --status-critical:#d03b3b;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface-1:      #1a1a19;
+    --page:           #0d0d0d;
+    --text-primary:   #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted:     #898781;
+    --gridline:       #2c2c2a;
+    --baseline:       #383835;
+    --border:         rgba(255,255,255,0.10);
+    --series-1:       #3987e5;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--text-primary);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  header.top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  header.top h1 {
+    font-size: 22px;
+    margin: 0;
+  }
+  header.top .sub {
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+  .top-actions { display: flex; align-items: center; gap: 12px; }
+
+  .conn-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--text-muted);
+  }
+  .conn-dot.live { background: var(--status-good); }
+  .conn-label { font-size: 12px; color: var(--text-secondary); }
+
+  button.theme-toggle {
+    border: 1px solid var(--border);
+    background: var(--surface-1);
+    color: var(--text-secondary);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  #config-banner {
+    display: none;
+    background: var(--surface-1);
+    border: 1px solid var(--status-warning);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  #config-banner code {
+    background: var(--page);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 2px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .tab-btn.active {
+    color: var(--text-primary);
+    border-bottom-color: var(--series-1);
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat-tile {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .stat-tile .label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+  .stat-tile .value {
+    font-size: 26px;
+    font-weight: 600;
+  }
+
+  .panel {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .panel h2 {
+    font-size: 15px;
+    margin: 0 0 12px;
+  }
+  .panel .empty {
+    color: var(--text-muted);
+    font-size: 13px;
+    padding: 12px 0;
+  }
+
+  button.action {
+    background: var(--series-1);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  button.action:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  #top-items {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .bar-row {
+    display: grid;
+    grid-template-columns: 128px 1fr 28px;
+    align-items: center;
+    gap: 14px;
+    padding: 7px 6px;
+    border-radius: 6px;
+    font-size: 13px;
+    transition: background-color 0.12s ease;
+  }
+  .bar-row:hover { background: var(--page); }
+  .bar-row .name {
+    color: var(--text-primary);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .bar-track {
+    background: var(--gridline);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    height: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bar-fill {
+    background: var(--series-1);
+    height: 100%;
+    border-radius: 0 4px 4px 0;
+    min-width: 6px;
+  }
+  .bar-row .count {
+    text-align: right;
+    color: var(--text-primary);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Sub-tabs (Pending: Right now / Lunch break) */
+  .subtabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .subtab-btn {
+    border: 1px solid var(--border);
+    background: var(--surface-1);
+    color: var(--text-secondary);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .subtab-btn.active {
+    background: var(--series-1);
+    color: #fff;
+    border-color: var(--series-1);
+  }
+  .subtab-btn .count {
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--page);
+    color: var(--text-secondary);
+    border-radius: 999px;
+    padding: 1px 7px;
+  }
+  .subtab-btn.active .count {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+  }
+
+  /* Dropdown filter (Completed: pickup slot) */
+  .filter-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .filter-row label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  .select-filter {
+    border: 1px solid var(--border);
+    background: var(--surface-1);
+    color: var(--text-primary);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .pending-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+  @media (max-width: 760px) {
+    .pending-grid { grid-template-columns: 1fr; }
+  }
+  /* Orders table */
+  .table-scroll { overflow-x: auto; }
+  table.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table.orders-table th {
+    text-align: left;
+    padding: 10px 12px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 12px;
+    border-bottom: 1px solid var(--gridline);
+    white-space: nowrap;
+  }
+  table.orders-table th.sortable {
+    cursor: pointer;
+    user-select: none;
+  }
+  table.orders-table th.sortable:hover { color: var(--text-primary); }
+  table.orders-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--gridline);
+    vertical-align: top;
+  }
+  table.orders-table tbody tr:last-child td { border-bottom: none; }
+  table.orders-table td.token { font-weight: 600; }
+  .sort-arrow { font-size: 10px; margin-left: 4px; opacity: 0.6; }
+
+  /* Availability toggle (Menu tab) */
+  .switch { position: relative; display: inline-block; width: 38px; height: 22px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch .slider {
+    position: absolute;
+    inset: 0;
+    background: var(--gridline);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+  .switch .slider::before {
+    content: "";
+    position: absolute;
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    top: 2px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.15s ease;
+  }
+  .switch input:checked + .slider { background: var(--status-good); border-color: var(--status-good); }
+  .switch input:checked + .slider::before { transform: translateX(16px); }
+  .switch input:disabled + .slider { opacity: 0.6; cursor: default; }
+  .availability-label { font-size: 12px; color: var(--text-secondary); }
+
+  .menu-category { margin-bottom: 16px; }
+  .menu-category:last-child { margin-bottom: 0; }
+  .menu-category-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .menu-category-header h2 {
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .menu-category-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <h1>J.V. ENTERPRISES — Staff Dashboard</h1>
+      <div class="sub">Paid orders only. Unpaid orders never reach this screen.</div>
+    </div>
+    <div class="top-actions">
+      <span class="conn-dot" id="conn-dot"></span>
+      <span class="conn-label" id="conn-label">connecting…</span>
+      <button class="theme-toggle" id="theme-toggle" type="button">Toggle theme</button>
+    </div>
+  </header>
+
+  <div id="config-banner">
+    Set <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> near the top of this file's
+    <code>&lt;script&gt;</code> block before deploying — the dashboard can't load data without them.
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="summary" type="button">Summary</button>
+    <button class="tab-btn" data-tab="pending" type="button">Pending orders</button>
+    <button class="tab-btn" data-tab="completed" type="button">Completed orders</button>
+    <button class="tab-btn" data-tab="menu" type="button">Menu</button>
+  </div>
+
+  <!-- Summary -->
+  <div class="tab-panel active" id="tab-summary">
+    <div class="stat-row">
+      <div class="stat-tile">
+        <div class="label">Orders today</div>
+        <div class="value" id="stat-orders">–</div>
+      </div>
+      <div class="stat-tile">
+        <div class="label">Revenue today</div>
+        <div class="value" id="stat-revenue">–</div>
+      </div>
+      <div class="stat-tile">
+        <div class="label">Avg order value</div>
+        <div class="value" id="stat-avg">–</div>
+      </div>
+      <div class="stat-tile">
+        <div class="label">Pending now</div>
+        <div class="value" id="stat-pending">–</div>
+      </div>
+      <div class="stat-tile">
+        <div class="label">Completed today</div>
+        <div class="value" id="stat-completed">–</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Top items sold today</h2>
+      <div id="top-items"><div class="empty">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- Pending -->
+  <div class="tab-panel" id="tab-pending">
+    <div class="subtabs">
+      <button class="subtab-btn active" data-subtab="now" type="button">⚡ Right now <span class="count">0</span></button>
+      <button class="subtab-btn" data-subtab="lunch" type="button">🍽️ Lunch break <span class="count">0</span></button>
+    </div>
+    <div id="pending-sections">
+      <div class="panel"><div class="empty">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- Completed -->
+  <div class="tab-panel" id="tab-completed">
+    <div class="filter-row">
+      <label for="completed-slot-select">Pickup slot</label>
+      <select id="completed-slot-select" class="select-filter">
+        <option value="all" selected>All</option>
+        <option value="now">Right now</option>
+        <option value="lunch">Lunch break</option>
+      </select>
+    </div>
+    <div class="panel">
+      <div class="table-scroll">
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th class="sortable" data-key="token_number">Token<span class="sort-arrow"></span></th>
+              <th>Items (qty)</th>
+              <th>Time slot</th>
+              <th class="sortable" data-key="total_amount">Total<span class="sort-arrow"></span></th>
+              <th class="sortable" data-key="completed_at">Completed<span class="sort-arrow"></span></th>
+            </tr>
+          </thead>
+          <tbody id="completed-table-body">
+            <tr><td colspan="5" class="empty">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu -->
+  <div class="tab-panel" id="tab-menu">
+    <div id="menu-categories">
+      <div class="panel"><div class="empty">Loading…</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+  // --- Fill these in before deploying (see README / .env.example) ---
+  const SUPABASE_URL = "https://dlurqyzhzyclcxghlvur.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_hVcENAV4TBUZtbyKB8kM7w_N7hvXU3O";
+  // --------------------------------------------------------------
+
+  const rupees = (n) => `₹${Number(n ?? 0).toFixed(2)}`;
+
+  const themeToggle = document.getElementById("theme-toggle");
+  themeToggle.addEventListener("click", () => {
+    const root = document.documentElement;
+    const current = root.getAttribute("data-theme");
+    root.setAttribute("data-theme", current === "dark" ? "light" : "dark");
+  });
+
+  if (!SUPABASE_URL.startsWith("http") || SUPABASE_ANON_KEY.startsWith("REPLACE")) {
+    document.getElementById("config-banner").style.display = "block";
+    document.getElementById("conn-label").textContent = "not configured";
+    throw new Error("J.V. ENTERPRISES dashboard: SUPABASE_URL / SUPABASE_ANON_KEY not set.");
+  }
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function setConn(live) {
+    document.getElementById("conn-dot").classList.toggle("live", live);
+    document.getElementById("conn-label").textContent = live ? "live" : "reconnecting…";
+  }
+
+  function todayStartISO() {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d.toISOString();
+  }
+
+  function elapsedLabel(iso) {
+    const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins}m ago`;
+    return `${Math.floor(mins / 60)}h ${mins % 60}m ago`;
+  }
+
+  function parseSlot(notes) {
+    if (!notes) return "—";
+    const m = notes.match(/^Pickup:\s*(.+)$/);
+    return m ? m[1] : notes;
+  }
+
+  function formatItems(items) {
+    return (items || []).map((it) => `${it.quantity} × ${it.item_name}`).join(", ") || "—";
+  }
+
+  // ---------- Tabs ----------
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
+    });
+  });
+
+  // ---------- Actions ----------
+  async function markCompleted(orderId) {
+    await supabase.from("orders").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", orderId);
+  }
+
+  // ---------- Top items ----------
+  function renderTopItems(rows) {
+    const el = document.getElementById("top-items");
+    if (!rows.length) {
+      el.innerHTML = `<div class="empty">No sales yet today.</div>`;
+      return;
+    }
+    const max = Math.max(...rows.map((r) => r.quantity));
+    el.innerHTML = rows
+      .map(
+        (r) => `
+        <div class="bar-row">
+          <span class="name" title="${r.item_name}">${r.item_name}</span>
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.round((r.quantity / max) * 100)}%"></div></div>
+          <span class="count">${r.quantity}</span>
+        </div>`
+      )
+      .join("");
+  }
+
+  async function refreshStats() {
+    const { data, error } = await supabase
+      .from("orders")
+      .select("total_amount, status")
+      .gte("placed_at", todayStartISO())
+      .in("status", ["paid", "ready", "completed"]);
+    if (error) {
+      console.error("refreshStats failed", error);
+      return;
+    }
+    const count = data.length;
+    const revenue = data.reduce((sum, o) => sum + Number(o.total_amount), 0);
+    const pending = data.filter((o) => o.status === "paid" || o.status === "ready").length;
+    const completed = data.filter((o) => o.status === "completed").length;
+    document.getElementById("stat-orders").textContent = count;
+    document.getElementById("stat-revenue").textContent = rupees(revenue);
+    document.getElementById("stat-avg").textContent = rupees(count ? revenue / count : 0);
+    document.getElementById("stat-pending").textContent = pending;
+    document.getElementById("stat-completed").textContent = completed;
+  }
+
+  async function refreshTopItems() {
+    const { data, error } = await supabase
+      .from("order_items")
+      .select("item_name, quantity, orders!inner(status, placed_at)")
+      .gte("orders.placed_at", todayStartISO())
+      .in("orders.status", ["paid", "ready", "completed"]);
+    if (error) {
+      console.error("refreshTopItems failed", error);
+      return;
+    }
+    const totals = {};
+    for (const row of data) {
+      totals[row.item_name] = (totals[row.item_name] || 0) + row.quantity;
+    }
+    const ranked = Object.entries(totals)
+      .map(([item_name, quantity]) => ({ item_name, quantity }))
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 5);
+    renderTopItems(ranked);
+  }
+
+  // ---------- Pending orders ----------
+  let pendingData = [];
+  let pendingSubtab = "now";
+
+  // The mini app offers "Right now" plus one later pickup window. That later
+  // window's exact clock time isn't fixed, so bucket everything that isn't
+  // "Right now" into "Lunch break" rather than matching a literal time string.
+  function slotKey(notes) {
+    return parseSlot(notes) === "Right now" ? "now" : "lunch";
+  }
+
+  function computeItemTotals(orders) {
+    const totals = {};
+    for (const order of orders) {
+      for (const it of order.order_items || []) {
+        totals[it.item_name] = (totals[it.item_name] || 0) + it.quantity;
+      }
+    }
+    return Object.entries(totals)
+      .map(([item_name, quantity]) => ({ item_name, quantity }))
+      .sort((a, b) => b.quantity - a.quantity);
+  }
+
+  function itemSummaryTableHTML(rows) {
+    if (!rows.length) return `<div class="empty">Nothing needed yet.</div>`;
+    return `
+      <table class="orders-table summary-table">
+        <thead><tr><th>Food item</th><th>Quantity</th></tr></thead>
+        <tbody>
+          ${rows.map((r) => `<tr><td>${r.item_name}</td><td>${r.quantity}</td></tr>`).join("")}
+        </tbody>
+      </table>`;
+  }
+
+  function pendingOrdersTableHTML(orders) {
+    if (!orders.length) {
+      return `<tr><td colspan="5" class="empty">No orders in this slot.</td></tr>`;
+    }
+    return orders
+      .map(
+        (order) => `
+          <tr data-id="${order.id}">
+            <td class="token">#${order.token_number ?? "–"}</td>
+            <td>${formatItems(order.order_items)}</td>
+            <td data-placed="${order.placed_at}">${elapsedLabel(order.placed_at)}</td>
+            <td>${rupees(order.total_amount)}</td>
+            <td><button class="action" data-id="${order.id}">Mark completed</button></td>
+          </tr>`
+      )
+      .join("");
+  }
+
+  function renderPending() {
+    const buckets = { now: [], lunch: [] };
+    for (const order of pendingData) {
+      buckets[slotKey(order.notes)].push(order);
+    }
+    document.querySelectorAll(".subtab-btn").forEach((btn) => {
+      btn.querySelector(".count").textContent = buckets[btn.dataset.subtab].length;
+    });
+
+    const container = document.getElementById("pending-sections");
+    if (!pendingData.length) {
+      container.innerHTML = `<div class="panel"><div class="empty">No pending orders.</div></div>`;
+      return;
+    }
+
+    const orders = [...buckets[pendingSubtab]].sort((a, b) => new Date(a.placed_at) - new Date(b.placed_at));
+    container.innerHTML = `
+      <div class="pending-grid">
+        <div class="panel">
+          <div class="table-scroll">
+            <table class="orders-table">
+              <thead>
+                <tr>
+                  <th>Token</th>
+                  <th>Items (qty)</th>
+                  <th>Placed</th>
+                  <th>Total</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>${pendingOrdersTableHTML(orders)}</tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Items needed</h2>
+          ${itemSummaryTableHTML(computeItemTotals(orders))}
+        </div>
+      </div>`;
+  }
+
+  async function refreshPending() {
+    const { data, error } = await supabase
+      .from("orders")
+      .select("id, token_number, total_amount, status, placed_at, notes, order_items(item_name, quantity)")
+      .in("status", ["paid", "ready"])
+      .order("token_number", { ascending: true });
+    if (error) {
+      console.error("refreshPending failed", error);
+      return;
+    }
+    pendingData = data;
+    renderPending();
+  }
+
+  document.querySelectorAll(".subtab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".subtab-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      pendingSubtab = btn.dataset.subtab;
+      renderPending();
+    });
+  });
+
+  document.getElementById("pending-sections").addEventListener("click", async (event) => {
+    const btn = event.target.closest("button.action");
+    if (!btn) return;
+    btn.disabled = true;
+    await markCompleted(btn.dataset.id);
+    // Realtime subscription below re-renders on the resulting UPDATE event.
+  });
+
+  function sortRows(rows, key, dir) {
+    return [...rows].sort((a, b) => {
+      let av = a[key];
+      let bv = b[key];
+      if (key === "total_amount" || key === "token_number") {
+        av = Number(av ?? 0);
+        bv = Number(bv ?? 0);
+      }
+      if (av == null) av = "";
+      if (bv == null) bv = "";
+      if (av < bv) return dir === "asc" ? -1 : 1;
+      if (av > bv) return dir === "asc" ? 1 : -1;
+      return 0;
+    });
+  }
+
+  function updateSortArrows(tableId, sortState) {
+    document.querySelectorAll(`#${tableId} th.sortable`).forEach((th) => {
+      const arrow = th.querySelector(".sort-arrow");
+      if (th.dataset.key === sortState.key) {
+        arrow.textContent = sortState.dir === "asc" ? "▲" : "▼";
+      } else {
+        arrow.textContent = "";
+      }
+    });
+  }
+
+  // ---------- Completed orders ----------
+  let completedData = [];
+  let completedSort = { key: "completed_at", dir: "desc" };
+  let completedSlotFilter = "all";
+
+  function renderCompleted() {
+    const filtered =
+      completedSlotFilter === "all" ? completedData : completedData.filter((o) => slotKey(o.notes) === completedSlotFilter);
+    const rows = sortRows(filtered, completedSort.key, completedSort.dir);
+    const el = document.getElementById("completed-table-body");
+    if (!rows.length) {
+      el.innerHTML = `<tr><td colspan="5" class="empty">No completed orders yet today.</td></tr>`;
+      return;
+    }
+    el.innerHTML = rows
+      .map((order) => {
+        const completedTime = order.completed_at
+          ? new Date(order.completed_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          : "—";
+        return `
+          <tr data-id="${order.id}">
+            <td class="token">#${order.token_number ?? "–"}</td>
+            <td>${formatItems(order.order_items)}</td>
+            <td>${parseSlot(order.notes)}</td>
+            <td>${rupees(order.total_amount)}</td>
+            <td>${completedTime}</td>
+          </tr>`;
+      })
+      .join("");
+  }
+
+  async function refreshCompleted() {
+    const { data, error } = await supabase
+      .from("orders")
+      .select("id, token_number, total_amount, completed_at, notes, order_items(item_name, quantity)")
+      .eq("status", "completed")
+      .gte("placed_at", todayStartISO())
+      .order("completed_at", { ascending: false });
+    if (error) {
+      console.error("refreshCompleted failed", error);
+      return;
+    }
+    completedData = data;
+    renderCompleted();
+  }
+
+  document.getElementById("completed-slot-select").addEventListener("change", (event) => {
+    completedSlotFilter = event.target.value;
+    renderCompleted();
+  });
+
+  document.querySelectorAll("#tab-completed th.sortable").forEach((th) => {
+    th.addEventListener("click", () => {
+      const key = th.dataset.key;
+      completedSort = completedSort.key === key ? { key, dir: completedSort.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" };
+      updateSortArrows("tab-completed", completedSort);
+      renderCompleted();
+    });
+  });
+  updateSortArrows("tab-completed", completedSort);
+
+  // ---------- Menu availability ----------
+  function groupByCategory(items) {
+    const map = new Map();
+    for (const item of items) {
+      if (!map.has(item.category)) map.set(item.category, []);
+      map.get(item.category).push(item);
+    }
+    return map;
+  }
+
+  function menuItemsTableHTML(items) {
+    return items
+      .map(
+        (item) => `
+          <tr data-id="${item.id}">
+            <td>${item.name}</td>
+            <td>${rupees(item.price)}</td>
+            <td>
+              <label class="switch">
+                <input type="checkbox" class="avail-toggle" data-id="${item.id}" ${item.is_available ? "checked" : ""}>
+                <span class="slider"></span>
+              </label>
+            </td>
+          </tr>`
+      )
+      .join("");
+  }
+
+  function renderMenu(rows) {
+    const el = document.getElementById("menu-categories");
+    if (!rows.length) {
+      el.innerHTML = `<div class="panel"><div class="empty">No menu items.</div></div>`;
+      return;
+    }
+    const byCategory = groupByCategory(rows);
+    el.innerHTML = [...byCategory.entries()]
+      .map(([category, items]) => {
+        const availableCount = items.filter((it) => it.is_available).length;
+        const allOn = availableCount === items.length;
+        return `
+          <div class="panel menu-category">
+            <div class="menu-category-header">
+              <h2>${category} <span class="availability-label">${availableCount}/${items.length} available</span></h2>
+              <label class="menu-category-toggle">
+                Category available
+                <span class="switch">
+                  <input type="checkbox" class="category-toggle" data-category="${category}" ${allOn ? "checked" : ""}>
+                  <span class="slider"></span>
+                </span>
+              </label>
+            </div>
+            <div class="table-scroll">
+              <table class="orders-table">
+                <thead><tr><th>Item</th><th>Price</th><th>Available</th></tr></thead>
+                <tbody>${menuItemsTableHTML(items)}</tbody>
+              </table>
+            </div>
+          </div>`;
+      })
+      .join("");
+  }
+
+  async function refreshMenu() {
+    const { data, error } = await supabase
+      .from("menu_items")
+      .select("id, name, price, category, is_available")
+      .order("category", { ascending: true })
+      .order("name", { ascending: true });
+    if (error) {
+      console.error("refreshMenu failed", error);
+      return;
+    }
+    renderMenu(data);
+  }
+
+  document.getElementById("menu-categories").addEventListener("change", async (event) => {
+    const itemCb = event.target.closest(".avail-toggle");
+    if (itemCb) {
+      itemCb.disabled = true;
+      const { error } = await supabase.from("menu_items").update({ is_available: itemCb.checked }).eq("id", itemCb.dataset.id);
+      if (error) {
+        console.error("menu availability update failed", error);
+        itemCb.checked = !itemCb.checked;
+      }
+      itemCb.disabled = false;
+      return;
+    }
+
+    const catCb = event.target.closest(".category-toggle");
+    if (catCb) {
+      catCb.disabled = true;
+      const { error } = await supabase
+        .from("menu_items")
+        .update({ is_available: catCb.checked })
+        .eq("category", catCb.dataset.category);
+      if (error) {
+        console.error("category availability update failed", error);
+        catCb.checked = !catCb.checked;
+      }
+      catCb.disabled = false;
+    }
+  });
+
+  // ---------- Refresh loop ----------
+  async function refreshAll() {
+    await Promise.all([refreshStats(), refreshPending(), refreshCompleted(), refreshTopItems(), refreshMenu()]);
+  }
+
+  setInterval(() => {
+    document.querySelectorAll("[data-placed]").forEach((el) => {
+      el.textContent = elapsedLabel(el.dataset.placed);
+    });
+  }, 30000);
+
+  supabase
+    .channel("orders-dashboard")
+    .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
+      refreshAll();
+    })
+    .on("postgres_changes", { event: "*", schema: "public", table: "menu_items" }, () => {
+      refreshMenu();
+    })
+    .subscribe((status) => {
+      setConn(status === "SUBSCRIBED");
+    });
+
+  refreshAll();
+</script>
+</body>
+</html>
