@@ -210,7 +210,13 @@ async def wa_webhook(request: Request):
 
 @app.post("/api/orders")
 async def api_create_order(request: Request):
-    body = await request.json()
+    try:
+        body = await request.json()
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid order JSON") from exc
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="Invalid order payload")
+
     student_name = str(body.get("student_name") or "").strip()[:120]
     roll_number = str(body.get("roll_number") or "").strip()[:80]
     if not student_name or not roll_number:
