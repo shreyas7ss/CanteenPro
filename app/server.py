@@ -1,16 +1,14 @@
-import logging
 import re
 import uuid
 from hmac import compare_digest
 from pathlib import Path
-from urllib.parse import urlencode
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 
 from app import db, getgabs
-from app.config import CORS_ORIGINS, GETGABS_WEBHOOK_TOKEN, UPI_REDIRECT_BASE_URL
+from app.config import CORS_ORIGINS, GETGABS_WEBHOOK_TOKEN
 from app.upi import build_pay_link
 
 app = FastAPI()
@@ -20,8 +18,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-logger = logging.getLogger(__name__)
-
 _WEBAPP_HTML = Path(__file__).parent / "static" / "webapp.html"
 _LOGO_PNG = Path(__file__).parent / "static" / "logo.png"
 _BRAND_LOGO_JPG = Path(__file__).parent.parent / "data" / "MvjLogo.jpg"
@@ -110,33 +106,16 @@ async def wa_webhook(request: Request):
 
     action_match = re.fullmatch(r"(paid|cancel)\s+([0-9a-f-]{36})", text, re.IGNORECASE)
     if text.lower() in {"paid", "cancel"}:
-        await getgabs.send_text(sender, f"Reply {text.upper()} followed by your full order reference.")
+        await getgabs.send_text(
+            sender,
+            "WhatsApp order updates are temporarily unavailable. Please use the ordering website.",
+        )
         return {"ok": True}
     if action_match:
-        try:
-            order_id = str(uuid.UUID(action_match.group(2)))
-        except ValueError:
-            await getgabs.send_text(sender, "That order reference is invalid. Please check it and try again.")
-            return {"ok": True}
-
-        order = await db.get_customer_order(order_id, sender)
-        if not order:
-            await getgabs.send_text(sender, "That order was not found for your WhatsApp number.")
-            return {"ok": True}
-
-        if action_match.group(1).lower() == "cancel":
-            cancelled = await db.cancel_order(order_id, sender)
-            message = (
-                "❌ Your order was cancelled."
-                if cancelled
-                else "That order can no longer be cancelled."
-            )
-        elif order["status"] == "cancelled":
-            message = "That order was cancelled and can't be marked as paid."
-        else:
-            token = await db.assign_next_token(order_id)
-            message = f"✅ Payment noted. Your canteen token is #{token}. Thank you!"
-        await getgabs.send_text(sender, message)
+        await getgabs.send_text(
+            sender,
+            "WhatsApp order updates are temporarily unavailable. Please use the ordering website.",
+        )
         return {"ok": True}
 
     if text.lower() in {"hi", "hello", "hey", "menu", "help", "start"}:
@@ -154,58 +133,11 @@ async def wa_webhook(request: Request):
         await getgabs.send_text(sender, "I couldn't read that order. Type MENU or use: 1x Bread Omelet, 2x Chai")
         return {"ok": True}
 
-    try:
-        menu_items = await db.get_available_menu_items()
-        menu_by_name = {item["name"].casefold(): item for item in menu_items}
-        order_items = []
-        total = 0.0
-
-        for parsed_item in parsed_items:
-            menu_item = menu_by_name.get(parsed_item["name"].casefold())
-            if not menu_item:
-                names = ", ".join(item["name"] for item in menu_items[:5])
-                await getgabs.send_text(sender, f"❌ '{parsed_item['name']}' not found. Try: {names}")
-                return {"ok": True}
-
-            quantity = parsed_item["quantity"]
-            unit_price = float(menu_item["price"])
-            total += unit_price * quantity
-            order_items.append({
-                "menu_item_id": menu_item["id"],
-                "item_name": menu_item["name"],
-                "unit_price": unit_price,
-                "quantity": quantity,
-            })
-
-        transaction_id = str(uuid.uuid4())
-        profile_name = str(body.get("profile_name") or "WhatsApp customer").strip()[:120]
-        order = await db.create_order(
-            customer_phone=sender,
-            student_name=profile_name or "WhatsApp customer",
-            total_amount=total,
-            merchant_transaction_id=transaction_id,
-            notes=f"WhatsApp order {transaction_id[:8]}",
-        )
-        await db.create_order_items(order["id"], order_items)
-
-        note = f"LineZero order {transaction_id[:8]}"
-        payment_url = f"{UPI_REDIRECT_BASE_URL}/pay/{transaction_id}?" + urlencode(
-            {"am": f"{total:.2f}", "tn": note}
-        )
-        summary = "\n".join(
-            f"{item['quantity']}× {item['item_name']} ₹{item['unit_price'] * item['quantity']:.2f}"
-            for item in order_items
-        )
-        await getgabs.send_text(
-            sender,
-            f"🍽️ Order received!\n\n{summary}\n\nTotal: ₹{total:.2f}"
-            f"\n\n💳 Pay here: {payment_url}\nOrder reference: {order['id']}"
-            f"\n\nAfter paying, reply PAID {order['id']}. To cancel, reply CANCEL {order['id']}.",
-        )
-        return {"ok": True}
-    except Exception:
-        logger.exception("Failed to process GetGabs WhatsApp message")
-        raise HTTPException(status_code=502, detail="Could not process WhatsApp message")
+    await getgabs.send_text(
+        sender,
+        "WhatsApp ordering is temporarily unavailable. Please place your order on the ordering website.",
+    )
+    return {"ok": True}
 
 
 @app.post("/api/orders")

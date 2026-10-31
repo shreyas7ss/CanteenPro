@@ -29,7 +29,6 @@ async def create_order(
     merchant_transaction_id: str,
     student_name: str,
     roll_number: Optional[str] = None,
-    customer_phone: Optional[str] = None,
     notes: str | None = None,
 ) -> dict:
     async with httpx.AsyncClient() as client:
@@ -37,7 +36,7 @@ async def create_order(
             f"{_REST_URL}/orders",
             headers={**_HEADERS, "Prefer": "return=representation"},
             json={
-                "customer_phone": customer_phone,
+                "telegram_user_id": 0,
                 "student_name": student_name,
                 "roll_number": roll_number,
                 "total_amount": total_amount,
@@ -64,40 +63,6 @@ async def create_order_items(order_id: str, items: list[dict]) -> None:
     async with httpx.AsyncClient() as client:
         resp = await client.post(f"{_REST_URL}/order_items", headers=_HEADERS, json=rows)
         resp.raise_for_status()
-
-
-async def cancel_order(order_id: str, customer_phone: str) -> bool:
-    """Cancels the order only if it's still pending_payment. Returns whether it
-    actually cancelled anything (False if the order was already paid/ready/etc)."""
-    async with httpx.AsyncClient() as client:
-        resp = await client.patch(
-            f"{_REST_URL}/orders",
-            headers={**_HEADERS, "Prefer": "return=representation"},
-            params={
-                "id": f"eq.{order_id}",
-                "customer_phone": f"eq.{customer_phone}",
-                "status": "eq.pending_payment",
-            },
-            json={"status": "cancelled"},
-        )
-        resp.raise_for_status()
-        return len(resp.json()) > 0
-
-
-async def get_customer_order(order_id: str, customer_phone: str) -> Optional[dict]:
-    async with httpx.AsyncClient() as client:
-        resp = await client.get(
-            f"{_REST_URL}/orders",
-            headers=_HEADERS,
-            params={
-                "id": f"eq.{order_id}",
-                "customer_phone": f"eq.{customer_phone}",
-                "select": "id,status,token_number",
-            },
-        )
-        resp.raise_for_status()
-        orders = resp.json()
-        return orders[0] if orders else None
 
 
 async def assign_next_token(order_id: str) -> int:
